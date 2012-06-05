@@ -1,0 +1,146 @@
+Frame 1 (74 bytes on wire, 74 bytes captured)
+    Arrival Time: Feb 24, 2003 15:42:12.773539000
+    Time delta from previous packet: 0.000000000 seconds
+    Time since reference or first frame: 0.000000000 seconds
+    Frame Number: 1
+    Packet Length: 74 bytes
+    Capture Length: 74 bytes
+Ethernet II, Src: 00:02:44:27:6f:e3, Dst: 00:02:b3:89:46:25
+    Destination: 00:02:b3:89:46:25 (Intel_89:46:25)
+    Source: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Type: IP (0x0800)
+Internet Protocol, Src Addr: 193.231.30.177 (193.231.30.177), Dst Addr: 193.231.30.225 (193.231.30.225)
+    Version: 4
+    Header length: 20 bytes
+    Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
+        0000 00.. = Differentiated Services Codepoint: Default (0x00)
+        .... ..0. = ECN-Capable Transport (ECT): 0
+        .... ...0 = ECN-CE: 0
+    Total Length: 60
+    Identification: 0x2c6c (11372)
+    Flags: 0x00
+        0... = Reserved bit: Not set
+        .0.. = Don't fragment: Not set
+        ..0. = More fragments: Not set
+    Fragment offset: 0
+    Time to live: 128
+    Protocol: ICMP (0x01)
+    Header checksum: 0x4cf4 (correct)
+    Source: 193.231.30.177 (193.231.30.177)
+    Destination: 193.231.30.225 (193.231.30.225)
+Internet Control Message Protocol
+    Type: 8 (Echo (ping) request)
+    Code: 0 
+    Checksum: 0x0e5c (correct)
+    Identifier: 0x0200
+    Sequence number: 0x3d00
+    Data (32 bytes)
+
+0000  61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f 70   abcdefghijklmnop
+0010  71 72 73 74 75 76 77 61 62 63 64 65 66 67 68 69   qrstuvwabcdefghi
+
+Frame 2 (102 bytes on wire, 102 bytes captured)
+    Arrival Time: Feb 24, 2003 15:42:12.773882000
+    Time delta from previous packet: 0.000343000 seconds
+    Time since reference or first frame: 0.000343000 seconds
+    Frame Number: 2
+    Packet Length: 102 bytes
+    Capture Length: 102 bytes
+Ethernet II, Src: 00:02:b3:89:46:25, Dst: 00:02:44:27:6f:e3
+    Destination: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Source: 00:02:b3:89:46:25 (Intel_89:46:25)
+    Type: IP (0x0800)
+Internet Protocol, Src Addr: 193.231.30.129 (193.231.30.129), Dst Addr: 193.231.30.177 (193.231.30.177)
+    Version: 4
+    Header length: 20 bytes
+    Differentiated Services Field: 0xc0 (DSCP 0x30: Class Selector 6; ECN: 0x00)
+        1100 00.. = Differentiated Services Codepoint: Class Selector 6 (0x30)
+        .... ..0. = ECN-Capable Transport (ECT): 0
+        .... ...0 = ECN-CE: 0
+    Total Length: 88
+    Identification: 0x511f (20767)
+    Flags: 0x00
+        0... = Reserved bit: Not set
+        .0.. = Don't fragment: Not set
+        ..0. = More fragments: Not set
+    Fragment offset: 0
+    Time to live: 255
+    Protocol: ICMP (0x01)
+    Header checksum: 0xa8c4 (correct)
+    Source: 193.231.30.129 (193.231.30.129)
+    Destination: 193.231.30.177 (193.231.30.177)
+Internet Control Message Protocol
+    Type: 5 (Redirect)
+    Code: 1 (Redirect for host)
+    Checksum: 0x1a36 (correct)
+    Gateway address: 193.231.30.225 (193.231.30.225)
+    Internet Protocol, Src Addr: 193.231.30.177 (193.231.30.177), Dst Addr: 193.231.30.225 (193.231.30.225)
+        Version: 4
+        Header length: 20 bytes
+        Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
+            0000 00.. = Differentiated Services Codepoint: Default (0x00)
+            .... ..0. = ECN-Capable Transport (ECT): 0
+            .... ...0 = ECN-CE: 0
+        Total Length: 60
+        Identification: 0x2c6c (11372)
+        Flags: 0x00
+            0... = Reserved bit: Not set
+            .0.. = Don't fragment: Not set
+            ..0. = More fragments: Not set
+        Fragment offset: 0
+        Time to live: 128
+        Protocol: ICMP (0x01)
+        Header checksum: 0x4cf4 (correct)
+        Source: 193.231.30.177 (193.231.30.177)
+        Destination: 193.231.30.225 (193.231.30.225)
+    Internet Control Message Protocol
+        Type: 8 (Echo (ping) request)
+        Code: 0 
+        Checksum: 0x0e5c (correct)
+        Identifier: 0x0200
+        Sequence number: 0x3d00
+        Data (32 bytes)
+
+0000  61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f 70   abcdefghijklmnop
+0010  71 72 73 74 75 76 77 61 62 63 64 65 66 67 68 69   qrstuvwabcdefghi
+
+Frame 3 (74 bytes on wire, 74 bytes captured)
+    Arrival Time: Feb 24, 2003 15:42:12.773968000
+    Time delta from previous packet: 0.000086000 seconds
+    Time since reference or first frame: 0.000429000 seconds
+    Frame Number: 3
+    Packet Length: 74 bytes
+    Capture Length: 74 bytes
+Ethernet II, Src: 00:50:8b:ca:09:0f, Dst: 00:02:44:27:6f:e3
+    Destination: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Source: 00:50:8b:ca:09:0f (CompaqCo_ca:09:0f)
+    Type: IP (0x0800)
+Internet Protocol, Src Addr: 193.231.30.225 (193.231.30.225), Dst Addr: 193.231.30.177 (193.231.30.177)
+    Version: 4
+    Header length: 20 bytes
+    Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
+        0000 00.. = Differentiated Services Codepoint: Default (0x00)
+        .... ..0. = ECN-Capable Transport (ECT): 0
+        .... ...0 = ECN-CE: 0
+    Total Length: 60
+    Identification: 0x4a6e (19054)
+    Flags: 0x00
+        0... = Reserved bit: Not set
+        .0.. = Don't fragment: Not set
+        ..0. = More fragments: Not set
+    Fragment offset: 0
+    Time to live: 255
+    Protocol: ICMP (0x01)
+    Header checksum: 0xaff1 (correct)
+    Source: 193.231.30.225 (193.231.30.225)
+    Destination: 193.231.30.177 (193.231.30.177)
+Internet Control Message Protocol
+    Type: 0 (Echo (ping) reply)
+    Code: 0 
+    Checksum: 0x165c (correct)
+    Identifier: 0x0200
+    Sequence number: 0x3d00
+    Data (32 bytes)
+
+0000  61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f 70   abcdefghijklmnop
+0010  71 72 73 74 75 76 77 61 62 63 64 65 66 67 68 69   qrstuvwabcdefghi

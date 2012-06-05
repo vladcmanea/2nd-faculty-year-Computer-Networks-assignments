@@ -1,0 +1,57 @@
+#!/bin/bash
+
+if [ $# -lt 1 ];
+then
+    echo "Scrieti numarul N: ";
+    read N;
+else
+    let N=$1;
+fi
+
+if [ $# -lt 2 ];
+then
+    echo "Scrieti numarul K: ";
+    read K;
+else
+    let K=$2;
+fi
+
+function combinari()
+{
+    if [ $1 -eq 1 ] || [ $1 -eq $2 ];
+    then
+        return 1;
+    fi
+
+    if [ $2 -eq 1 ];
+    then
+        return $1;
+    else
+
+        local N1;
+        let N1=$1-1;
+
+        local K1;
+        let K1=$2-1;
+
+        local K2;
+        let K2=$2;
+
+        local c1;
+        local c2;
+        local c3;
+
+        combinari $N1 $K2;
+        let c1=$?;
+
+        combinari $N1 $K1;
+        let c2=$?;
+
+        let c3=c1+c2;
+
+        return $c3;
+    fi
+}
+
+combinari $N $K;
+echo "$?";

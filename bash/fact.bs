@@ -1,0 +1,47 @@
+#!/bin/bash
+
+if [ $1 -le 1 ];
+then
+    echo 1;
+else
+    let q=$1-1;
+    let c=$1*$(./fact.bs $q);
+    echo $c;
+fi
+
+#function factorial()
+#{
+#  if [ $1 -le 1 ];
+#  then
+#    return 1;
+#  fi
+
+#  local c;
+#  let c=$1-1;
+#  echo $c;
+
+#  local d;
+#  d=$1;
+#  echo $d;
+
+#  factorial $c;
+
+#  let c=$?*$d;
+#  echo $c;
+
+#  return $c;
+#}
+
+#declare -i F;
+
+#if [ $# -eq 0 ];
+#then
+#  echo "Da factorialul ";
+#  read F;
+#else
+#  F=$1;
+#fi
+
+#factorial $F
+
+#echo "Factorialul este: $?" > out.txt;

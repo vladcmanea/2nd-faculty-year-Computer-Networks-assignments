@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0047)http://profs.info.uaic.ro/~eonica/rc/lab06.html -->
+<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Retele de calculatoare</TITLE>
+</HEAD><BODY>
+
+<H1>Laborator 6</H1>
+<P></P>
+<H2>Tematica laboratorului</H2>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab06.html#C0">Optiuni pentru socketuri</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab06.html#C1">Modelul de server concurential forked</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab06.html#C2">Exercitii</A></LI>
+</UL>
+
+<P>
+
+</P><H2><A name="C0">Optiuni pentru socketuri</A></H2>
+<P>Un socket la creare are asociati o serie de parametri. Acestia sunt asociati diverselor nivele ale implementarii interne a stivei de protocoale TCP/IP. Acesti parametri (optiuni) pot fi obtinuti si respectiv setati prin urmatoarele functii:</P>
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen);
+
+int setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen);
+</PRE>
+<UL>
+<LI>s - reprezinta descriptorul de socket pentru care se verifica/seteaza optiunea</LI>
+<LI>level - reprezinta nivelul de setare al optiunii (ex: SOL_SOCKET - pentru nivelul socketului in sine, IPPROTO_TCP, IPPROTO_IP, IPPROTO_UDP - la nivel de implementare a respectivului protocol)</LI>
+<LI>optname - numele optiunii; optiunile disponibile pentru fiecare nivel se pot regasi in paginile de manual din sectiunea 7 (ex: man 7 socket, man 7 tcp, etc)</LI>
+<LI>optval - valoarea optiunii; tipul valorii depinde de fiecare optiune in parte</LI>
+<LI>optlen - dimensiunea valorii optiunii</LI>
+</UL>
+
+<H2><A name="C1">Modelul de server concurential forked</A></H2>
+<P>Modelul de server TCP prezentat intr-un laborator anterior este bazat pe o executie iterativa ce presupune tratarea fiecarui client secvential. Uzual, este de dorit ca un server sa poata trata mai multi clienti simultan. In acest scop se pot utiliza fie cate un proces dedicat tratarii fiecarui client, conform celor prezentate in continuare, fie o solutie similara bazata pe threaduri dedicate clientilor.<BR>
+Solutia bazata pe <I>fork()</I> in cea mai simpla varianta functioneaza pe urmatorul principiu:</P>
+<UL>
+<LI>Serverul TCP deschide socketul, ataseaza un port pentru furnizarea serviciului si asteapta conectarea clientilor ca in mod obisnuit (pasii 1, 2, 3 din modelul iterativ)</LI>
+<LI>Bucla de tratare a clientilor incepe cu acceptarea conexiunilor ca in mod obisnuit (pasul 4 din modelul iterativ), urmata de actiunile de mai jos</LI>
+<LI>Dupa acceptarea unei conexiuni si obtinerea socketului asociat respectivului client (returnat de <I>accept()</I>), serverul creeaza un proces copil prin fork() dedicat clientului/conexiunii respective (pas nou fata de modelul iterativ).</LI>
+<LI>In cadrul procesului copil serverul inchide socketul de ascultare pentru primirea de conexiuni (utilizat in <I>listen</I>) si realizeaza comunicarea/transferul de date catre si dinspre client, dupa care va finaliza conexiunea (similar pasilor 5, 6 din modelul iterativ) </LI>
+<LI>In cadrul serverului (parinte) se inchide socketul asociat clientului si se incearca o "curatare" a proceselor copil eventual terminate prin apelarea waitpid neblocant - cu flagul WNOHANG (pas nou fata de modelul iterativ)</LI>
+<LI>Se reia bucla de acceptare pentru a se trata un nou client (similar modelului iterativ)</LI>
+</UL>
+<P>Avantajul, pe langa tratarea simultana a mai multi clienti consta si intr-o asteptare minima a clientului in coada listen pana la acceptarea conexiunii. Practic serverul reia bucla de acceptare imediat, copiii ocupandu-se in paralel de tratarea cererilor clientilor. O problema ce apare la acest tip de model de server concurent este posibila supraincarcare a serverului in ceea ce priveste numarul de copii si totodata timpul pierdut la crearea si eliminarea din sistem de noi procese pentru fiecare noua conexiune. 
+</P>
+
+<H2><A name="C2">Exercitii:</A></H2>
+<P>1. Adaptati partea de server din problema propusa in laboratorul anterior ( cea privind un set de comenzi citite de la tastatura de un client si transmise spre rezolvare catre un server utilizand TCP ca protocol de transport ) la modelul concurential descris in cadrul acestui laborator. Adaugati la comenzile existente executate de client si tratate de server si urmatoarele optiuni:<BR>
+- <I>put [nume fisier]</I> - clientul trimite in retea fisierul specificat catre server<BR>
+- <I>get [nume fisier]</I> - clientul obtine de la server fisierul specificat, daca acesta exista, prin transfer in retea </P>
+<P>2. [Optional] Adaptati problema 2 din cadrul laboratorului trecut la modelul concurential de server discutat in cadrul acestui laborator. Modificati solutia astfel incat raspunsul va fi trimis de server tot sub forma unei structuri, definite in modul urmator:
+</P><PRE>struct response
+{
+	char message[30];
+	int result;
+}
+</PRE>
+Campul <I>message</I> va include in mod obisnuit ca mesaj de raspuns "The result is:", iar campul <I>result</I> va contine rezultatul operatiei calculate de server. Serverul va "obosi" la fiecare al treilea client si va trimite ca mesaj "I am tired. Try another time.", fara a mai calcula rezultatul operatiei (nu va mai completa campul in structura trimisa). 
+<P></P>
+<P>Solutie: <A href="http://profs.info.uaic.ro/~eonica/rc/srv-tcp.c">Server</A> <A href="http://profs.info.uaic.ro/~eonica/rc/cli-tcp.c">Client</A>
+
+</P></BODY></HTML>

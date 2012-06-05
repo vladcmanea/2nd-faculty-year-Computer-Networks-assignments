@@ -1,0 +1,30 @@
+#!/bin/bash
+
+declare -i m
+declare -i n
+
+if [ $# -lt 1 ];
+then
+    echo "Scrieti primul numar: ";
+    read m;
+else
+    m=$1;
+fi
+
+if [ $# -lt 2 ];
+then
+    echo "Scrieti al doilea numar: ";
+    read n;
+else
+    n=$2;
+fi;
+
+declare -i rez
+rez=0
+
+for i in `seq 1 $m`;
+do
+    rez=rez+$n
+done
+
+echo "rezultatul operatiei $m * $n este: $rez"

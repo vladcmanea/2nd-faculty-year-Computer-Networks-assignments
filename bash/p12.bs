@@ -1,0 +1,59 @@
+#!/bin/bash
+
+declare -i N;
+declare -i S;
+declare -i K;
+declare -i W;
+
+if [ $# -eq 0 ];
+then
+
+    echo "Scrieti numarul de elemente: ";
+    read N;
+
+    S=0;
+    for i in `seq 1 $N`;
+    do
+        echo "Scrieti al $i-lea numar: ";
+        read K;
+        let S=$S+$K;
+    done
+
+    echo "Suma elementelor este $S" >> output.txt;
+    echo "Suma elementelor este $S";
+
+else
+
+    let N=$1;
+
+    K=0;
+    S=0;
+
+    for p in $@;
+    do
+        if [ $K -eq 0 ];
+        then
+            K=$K+1;
+        else
+            let S=$S+$p;
+            let K=$K+1;
+
+            if [ $K -gt $N ];
+            then
+                let W=$W+1;
+                echo "Suma elementelor pe portiunea $W este $S" >> output.txt;
+                echo "Suma elementelor pe portiunea $W este $S";
+                S=0;
+                K=1;
+            fi
+        fi
+    done
+
+    if [ $K -gt 1 ];
+    then
+        let W=$W+1;
+        echo "Suma elementelor pe ultima portiune, $W, este $S" >> output.txt;
+        echo "Suma elementelor pe ultima portiune, $W, este $S";
+    fi
+
+fi

@@ -1,0 +1,83 @@
+#!/bin/bash
+
+declare -a vv;
+declare -i p;
+p=0;
+
+let p=$#;
+
+if [ $p -eq 0 ];
+then
+
+    echo "Scrieti numarul de elemente: ";
+    read p;
+
+    for i in `seq 1 $p`;
+    do
+        echo "Scrieti elementul de pe pozitia $i:";
+        read vv[i];
+    done;
+
+else
+
+    declare -i j;
+    j=0;
+
+    for q in $@;
+    do
+        let j=j+1;
+        let vv[j]=q;
+    done
+
+fi
+
+declare -i max;
+max=0;
+
+for i in `seq 1 $p`;
+do
+
+    declare -i c;
+    c=i+1;
+
+    declare -i h;
+    h=1;
+
+    for j in `seq $c $p`;
+    do
+        if [ ${vv[i]} -eq ${vv[j]} ];
+        then
+            h=h+1;
+        fi
+    done
+
+    if [ $h -gt $max ];
+    then
+        max=h;
+    fi
+
+done
+
+for i in `seq 1 $p`;
+do
+
+    declare -i c;
+    c=i+1;
+
+    declare -i h;
+    h=1;
+
+    for j in `seq $c $p`;
+    do
+        if [ ${vv[i]} -eq ${vv[j]} ];
+        then
+            h=h+1;
+        fi
+    done
+
+    if [ $h -eq $max ];
+    then
+        echo "Valoarea ${vv[i]} se gaseste de $max ori";
+    fi
+
+done

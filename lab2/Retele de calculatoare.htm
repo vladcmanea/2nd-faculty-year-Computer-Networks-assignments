@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0047)http://profs.info.uaic.ro/~eonica/rc/lab02.html -->
+<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Retele de calculatoare</TITLE>
+</HEAD><BODY>
+
+<H1>Laborator 2</H1>
+<H2>Tematica laboratorului</H2>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab02.html#C1">Recapitulare procese</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab02.html#C2">Recapitulare semnale</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab02.html#C3">Exercitii</A></LI>
+</UL>
+
+<H2><A name="C1">Recapitulare procese</A></H2>
+
+<H3>Generalitati</H3>
+<P>Un proces este o instanta a unui program.<BR>
+Fiecare proces in Linux este identificat in mod unic de catre un ID, referit ca pid. Acesta are dimensiunea de 16 biti si este asignat unui proces la creare in mod secvential fata de pid-urile anterioare.<BR>
+Procesele in Linux sunt ierarhizate sub forma unui arbore, avand ca radacina procesul init. Parintele - A, al unui proces - B, este procesul ce a creat procesul B. ID-ul procesului parinte este referit din perspectiva procesului copil ca ppid (parent process id).<BR><BR>
+Intr-un program C, tipul asociat ID-ului unui proces este pid_t definit in sys/types.h .<BR><BR>
+Obtinerea ID-ului procesului curent intr-un program C se realizeaza prin functia</P> 
+<PRE>pid_t getpid(void);</PRE><BR>
+<P>Obtinerea ID-ului procesului parinte se realizeaza prin functia</P>
+<PRE>pid_t getppid(void);</PRE><BR> 
+<P>Ambele functii necesita includerea unistd.h .<BR><BR> 
+Pentru a obtine lista proceselor active la un moment dat se poate utiliza ps la linia de comanda. Rularea ps fara argumente va afisa doar procesele asociate cu terminalul curent. O varianta pentru obtinerea unor informatii mai detaliate este apelul cu urmatoarele argumente:</P>
+<PRE>% ps -e -o pid,ppid,command</PRE>
+<UL>
+<LI>-e - afisarea tuturor proceselor ce ruleaza pe sistem</LI>
+<LI>-o - specificarea informatiilor afisate pentru un proces (command afiseaza linia de comanda - argumentele procesului)</LI>
+</UL>  
+
+<H3>Crearea proceselor</H3>
+<P>Exista mai multe variante de creare a proceselor in mod programatic. Vom descrie in cele ce urmeaza doua variante, care la nevoie pot fi combinate.</P>
+
+<H4>Utilizarea apelului fork()</H4>
+<P>Exemplu:</P>
+<PRE>pid_t child;
+
+child = fork ();
+if (child != 0) 
+{
+	printf (“We are in the parent process with id %d and having a child with id %d\n”, (int) getpid (), (int) child);
+}
+else
+{
+	printf (“We are in the child process with id %d and having a parent with id %d\n”, (int) getpid (), (int) getppid() );
+}
+</PRE>
+<P>La apelul fork un proces duplicat, copil, este creat. Procesul parinte continua executia programului din punctul apelului fork, la fel ca si procesul copil. Particularitatea functiei fork, ce ofera posibilitatea de a distinge codul procesului parinte de cel al copilului, este ca apelul returneaza valori diferite in cele doua procese. Valoarea returnata in procesul parinte este pid-ul procesului copil, iar cea returnata in procesul copil este 0. Procesul copil este o copie distincta a starii procesului parinte la momentul fork, cu exceptia lock-urilor pe fisiere si semnalelor netratate (pending).  
+</P>
+
+<P>Consultati, compilati si executati exemplul din pagina cursului ce prezinta executia in mod concurent a doua procese <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S2/fork.c">fork.c</A></P>
+
+<H4>Utilizarea apelurilor din familia exec()</H4>
+<P>Functiile din familia exec inlocuiesc programul curent cu un alt program in cadrul aceluiasi proces. Programul curent este oprit, iar programul inlocuitor este pornit, imaginea procesului initial fiind inlocuita cu cea noua. Apelurile exec nu vor returna decat in cazul unei erori la apel (valoarea fiind -1).<BR>
+Functiile din familia exec sunt:</P>
+<PRE>int execl(const char *path, const char *arg, ...);
+int execlp(const char *file, const char *arg, ...);
+int execle(const char *path, const char *arg, ..., char * const envp[]);
+int execv(const char *path, char *const argv[]);
+int execvp(const char *file, char *const argv[]);
+int execve(const char *filename, char *const argv[], char *const envp[]);
+</PRE>
+<P>Diferentierea intre modul de actiune se poate face prin sufixul fiecarei functii.<BR>
+Astfel, functiile ce au in cadrul sufixului "p" - execlp si execvp - accepta ca prim parametru un nume de program ce va fi cautat pe disc in calea specificata de variabila de path. Celelalte necesita specificarea pathului complet ca prim argument.<BR>
+Functiile care contin litera v in cadrul sufixului accepta argumentele pentru noul proces specificate ca un tablou terminat cu NULL de pointeri la stringuri.<BR>
+Functiile care contin litera l in cadrul sufixului accepta argumentele pentru noul proces specificate utilizand mecanismul C varargs - sir de parametri individuali de tip pointer la string, finalizat cu NULL.<BR>
+Functiile care contin litera e in cadrul sufixului accepta un parametru aditional ce specifica un tablou de variabile de mediu, de tip pointeri la string, terminat cu NULL, de forma "VARIABILA=valoare".<BR>
+La un apel de tip exec, lista de argumente specificata pentru noul proces, este lista integrala de argumente ca si cum procesul ar fi rulat de la linia de comanda (argumentele fiind ulterior procesate prin intermediul argc/argv); in consecinta nu ar trebui sa fie redusa la NULL niciodata continand macar un element si anume numele procesului ce in mod normal este primul argument.
+</P>
+<P>In mod obisnuit apelurile de tip exec se utilizeaza in combinatie cu instantierea unui nou proces prin fork. Astfel un caz tipic, il constituie un apel fork pentru crearea unui proces copil, in corpul caruia apoi se apeleaza exec pentru a-l inlocui cu un alt proces, procesul parinte continuand executia in paralel sau asteptand finalizarea dupa caz.</P>
+
+<H3>Terminarea proceselor</H3>
+<P>Un proces se termina normal in doua moduri posibile: returnand din functia main sau executand apelul exit(). Acestui apel i se transmite ca parametru codul de iesire/eroare ce va fi returnat de proces. Acelasi cod este returnat de main, fiind utilizat uzual 0 pentru o terminare normala. Nu se recomanda utilizarea de alte valori decat pentru coduri de eroare pentru a pastra o buna interoperabilitate cu restul programelor. Obtinerea codului de iesire a ultimului program executat in cadrul shellului se poate face in general prin intermediul variabilei $?. Desi tipul codului de retur din functia main() este int, valorile sale in caz de eroare sunt folosite uzual pana la 127. Valorile peste 128 sunt caracteristice intreruperilor cauzate de semnale prezentate mai jos avand semnificatia 128+codul semnalului.<BR>
+Un proces poate fi terminat de la linia de comanda utilizand comanda kill.</P>
+<PRE>kill pidvalue</PRE>
+<P>Aceasta comanda opreste procesul prin trimiterea implicita a semnalului SIGTERM, cu exceptia cazului cand procesul trateaza semnalul in mod explicit.<BR>
+Un proces se poate termina anormal (implicit) si sub efectul altor semnale:</P>
+<UL>
+<LI>SIGBUS - eroare de bus (uzual incercare de accesare a unei locatii de memorie ce nu poate fi adresata de procesor in mod fizic)</LI>
+<LI>SIGSEGV - eroare de segmentare (incercare de accesare nepermisa a unei locatii de memorie existente; uzual apare la accesul unui pointer nealocat)</LI>
+<LI>SIGFPE - exceptie de virgula mobila (nu apare doar la probleme legate de calculele in virgula mobila ci in general legat de operatiile aritmetice cum ar fi impartirea la zero)</LI>
+<LI>SIGINT - semnalul trimis la initiativa utilizatorului prin combinatia de taste Ctrl+C</LI>
+<LI>SIGABRT - semnalul trimis de catre proces catre acesta insusi prin apelul abort() efectul fiind de terminare si de inchidere a tuturor streamurilor deschise</LI>
+<LI>SIGKILL - acest semnal termina procesul in mod invariabil fata de SIGTERM (nu poate fi tratat)</LI>
+</UL>
+<P>Suspendarea unui proces se realizeaza prin trimiterea semnalului SIGTSTP. Procesul este trimis in background iar executia sa este suspendata. Trimiterea semnalului de la tastatura se face utilizand combinatia de taste Ctrl+Z. <BR>
+Vizualizarea proceselor ce se afla la un moment dat in background este posibila prin utilizarea comenzii <I>jobs</I><BR>
+Reluarea activitatii proceselor suspendate este posibila prin intermediul comenzii <I>fg [numar job]</I> ce readuce procesul la terminal, sau prin intermediul comenzii <I>bg [numar job]</I> ce rezuma activitatea procesului in background in conditiile in care acesta nu necesita input utilizator sau iesire la ecran. Rularea unui proces in background din start se realizeaza specificand <I>&amp;</I> ca ultim parametru la apel.</P>
+<P>Toate aceste semnale pot fi trimise catre un proces si direct de la consola similar cu trimiterea implicita a SIGTERM prin apelul kill, dar adaugand un parametru de identificare a semnalului <BR> (ex: kill -KILL pidvalue sau kill -9 pidvalue pentru SIGKILL)<BR>
+La crearea unui proces copil prin utilizarea fork nu exista garantia care dintre procesele parinte si copil se va termina primul. Pentru a sincroniza executia parintelui prin asteptarea terminarii procesului copil se poate utiliza una din functiile din familia wait (ce necesita incluziunea sys/wait.h). Dintre acestea, cele mai utilizate sunt:</P>
+<UL>
+<LI><PRE>pid_t wait(int *status);</PRE>Functia blocheaza procesul parinte pana ce unul dintre copii isi termina executia. Valoarea de retur indica pid-ul copilului ce s-a terminat. Parametrul status este un pointer la o valoare de iesire a functiei. Din aceasta se pot extrage diverse informatii despre primul proces copil terminat dupa apelul wait, prin intermediul unui set de macro-uri, pasand status ca argument pentru acestea. Spre exemplu apelul WEXITSTATUS(status) returneaza codul de iesire al procesului. Se recomanda utilizarea acestui macro doar in cazul in care iesirea s-a realizat normal prin exit sau return din main. Acest fapt se poate determina utilizand alt apel de macro: WIFEXITED(status) care returneaza true in cazul iesirii normale si false altfel. In cazul iesirii cauzate de un semnal, pentru obtinerea codului de eroare se utilizeaza apelul de macro WTERMSIG(status)</LI><BR><BR>
+<LI><PRE>pid_t waitpid(pid_t pid, int *status, int options);</PRE>Functia aduce in plus posibilitatea de a astepta terminarea unui anumit copil specificat prin intermediului primului parametru. Ultimul parametru reprezinta o reuniune de flaguri ce pot fi utilizate facultativ pentru setarea anumitor optiuni. Specificarea WNOHANG spre exemplu ca flag, face ca apelul sa returneze imediat daca nici un proces nu s-a terminat (valoarea de retur este 0 in acest caz)</LI>
+</UL>
+
+<P>Consultati, compilati si executati exemplul din pagina cursului ce prezinta executia programatica a comenzii ls cu argumente folosind fork(), execlp() si wait() <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S2/exec.c">exec.c</A></P>
+
+<H4>Proceze zombie</H4>
+<P>In cazul in care un proces copil se termina iar procesul parinte apeleaza wait (indiferent de momentul terminarii procesului copil) starea procesului la terminare este transmisa in modul amintit in paragraful anterior catre procesul parinte. In cazul in care procesul copil isi incheie executia iar procesul parinte nu apeleaza wait, procesul copil devine un proces zombie.<BR>
+Un proces zombie este un proces care s-a terminat dar nu a fost inca eliminat din sistem, fiind din aceasta cauza inca in stadiul de consumator de resurse chiar daca la nivel minim. Pe langa functia de sincronizare apelul wait indeplineste si acest rol. In cazul in care procesul parinte se termina fara a apela wait pentru copiii sai, acestia sunt "adoptati" de catre procesul init (primul proces lansat de sistem cu pid 1), acesta eliminand automat si eventualele procese zombie din sistem.<BR>
+Chiar daca apelul wait rezolva problema proceselor zombie, acesta poate face ca procesul parinte sa astepte in mod nedorit un proces copil cand ceea ce se doreste e o executie in paralel a ambelor procese. O varianta pentru ca procesul parinte sa nu fie blocat de apelul wait este ca executia acestuia sa fie facuta in cadrul tratarii semnalului SIGCHLD ce este trimis de copil, spre parinte, in momentul in care executia copilului ia sfarsit (pentru mai multe informatii despre tratarea semnalelor consultati sectiunea dedicata acestora).</P> 
+
+<H3>Prioritatea proceselor</H3>
+<P>Dupa cum s-a mentionat si in unul din paragrafele anterioare, nu exista nici o garantie in cazul mai multor procese ce ruleaza simultan care din ele se va termina primul. Exista posibilitatea de a indica insa sistemului care dintre procese ar trebui prioritizate prin asignarea catre acestea a unei valori numita niceness, care in mod implicit este 0. O valoare mai mare de niceness este echivalenta cu o prioritate mai mica, iar in cazul unei valori negative cat mai joase prioritatea este mai mare. Pentru a asigna o prioritate mai mare unui proces este necesara logarea ca root.<BR>
+Specificarea valorii de niceness se poate face de la linia de comanda odata cu rularea procesului prin intermediul comenzii nice:</P>
+<PRE>% nice -n 5 slowprocess</PRE>
+<P>Programatic, pentru schimbarea valorii de niceness se utilizeaza functia nice() (care necesita includerea unistd.h):</P>
+<PRE>int nice(int inc);</PRE>
+<P>Parametrul reprezinta o valoare de adaugat la niceness-ul curent al procesului, iar valoarea returnata e noua valoare de niceness. In caz de eroare functia returneaza -1. Datorita faptului ca aceasta poate fi o valoare valida pentru noul niceness, se recomanda stergerea errno in prealabil apelului, si verificarea in cazul returului -1, pentru a diferentia cazul de eroare.</P>
+
+<H2><A name="C2">Semnale</A></H2>
+<P>Un semnal in Linux reprezinta un mesaj special, asincron, trimis unui proces. La momentul primirii semnalului, procesul isi intrerupe executia obisnuita imediat, cu scopul de a trata semnalul. Fiecare semnal din Linux are asociat un cod numeric dar uzual este utilizat numele sau. Aceste nume sunt definite in usr/include/bits/signum.h . Referirea lor se face insa programatic indirect prin includerea signal.h .<BR>
+Pentru trimiterea unui semnal catre un proces de la linia de comanda se poate utiliza kill, dupa cum s-a precizat si in paragraful despre terminarea proceselor. Programatic, un semnal poate fi trimis prin intermediul functiei:</P>
+<PRE>int kill(pid_t pid, int sig);</PRE>
+<P>Parametrii acestei functii reprezinta evident id-ul procesului si numele/valoarea semnalului trimis. Functia returneaza 0 la succes si -1 la eroare.<BR> 
+La primirea unui semnal un proces poate actiona in diverse moduri. Semnalele au asociata o tratare standard, care reprezinta comportamentul implicit al procesului la primirea lor. Aceasta poate varia de la ignorarea semnalului si continuarea executiei ca in cazul SIGCHLD, pana la terminarea procesului dupa cum s-a prezentat in sectiunea dedicata acestui subiect. Majoritatea semnalelor poate fi insa tratata in mod particular de un proces prin asocierea unui handler ce se va executa la primire, dupa care in functie de acesta, procesul isi poate continua executia. Special in acest scop, pentru transmiterea de diverse notificari nestandard de catre un proces, la dispozitia programatorului sunt puse doua semnale SIGUSR1 si SIGUSR2.<BR>
+Tratarea semnalelor se poate face prin intermediul functiei sigaction():</P>
+<PRE>int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);</PRE>
+<P>Primul parametru este indicativul semnalului. Urmatorii doi parametri sunt pointeri la doua structuri sigaction din care una este de intrare, realizand legatura cu handlerul semnalului dupa cum este descris mai jos, si una este de iesire, preluand vechea modalitate de tratare a semnalului. Acest ultim parametru poate fi utilizat ulterior pentru resetarea tratarii semnalului la comportamentul initial. Daca acest lucru nu este necesar poate fi pasat ca NULL. Functia returneaza 0 la succes si -1 la eroare<BR>
+Asocierea handlerului de tratare a semnalului se face prin setarea campului sa_handler din cadrul structurii sigaction. Acesta poate lua valorile constante SIG_DFL - tratarea implicita sau SIG_IGN - ignorarea semnalului. Pentru asocierea unui handler definit particular parametrul este setat ca pointer la o functie ce primeste un singur parametru de tip intreg - numarul semnalului, si returneaza void. Datorita caracterului asincron al acestei functii, sau a cazului exceptional cand tratarea unui semnal ar putea fi intrerupta de un altul, ea ar trebui sa aiba un corp cat mai simplu fiind de evitat operatile I/O sau apeluri la alte functii de sistem. Dupa caz, functia poate returna, procesul reluand executia obisnuita sau poate termina procesul.<BR>
+Metoda de tratare a semnalelor utilizand sigaction este una destul de complexa ce ofera diverse optiuni prin setarea diferitelor campuri ale structurii sigaction. O metoda mai simpla de tratare a unui semnal, este de a folosi functia signal:</P>
+<PRE>sighandler_t signal(int signum, sighandler_t handler);</PRE>
+<P>Aceasta functie realizeaza aceeasi asociere descrisa mai sus a unei functii handler de tratare a semnalului specificata in al doilea parametru cu un semnal specificat in primul parametru (tipul sighandler_t nu e altceva decat un tip pointer la functie cu parametru int si retur void). Functia signal va returna vechiul handler al semnalului ce poate fi utilizat pentru o resetare ulterioara.<BR>
+Primirea unui semnal tratat poate fi asteptata programatic prin apelul functii pause():</P>
+<PRE>#include &lt;unistd.h&gt;
+
+int pause(void);
+</PRE>
+<P>Functia va opri executia procesului pana ce acesta fie e terminat de un semnal, fie primeste un semnal pentru care exista tratare explicita. Functia returneaza doar in al doilea caz, dupa executia metodei de tratare, valoare de retur fiind -1 si variabila errno fiind setata pe EINTR .</P>
+
+<P>Consultati, compilati si executati exemplul din pagina cursului ce prezinta tratarea SIGUSR2 prin afisarea fisierului /etc/services <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S2/sig.c">sig.c</A></P>
+
+<P>Un proces poate avea asociata o alarma, ce semnifica trimiterea semnalului SIGALRM catre proces la anumite intervale de timp. In acest scop se utilizeaza primitiva alarm():</P>
+<PRE>#include &lt;unistd.h&gt;
+
+unsigned int alarm(unsigned int seconds);
+</PRE>
+<P>Parametrul semnifica intervalul de secunde dupa care se va trimite un semnal procesului apelant. Valoarea de retur indica numarul de secunde ce ar fi ramas in cazul in care procesul ar fi avut programata deja o alarma (care este anulata de apel), sau 0 in caz ca aceasta nu exista.</P>
+
+<P>Alte functii legate de semnale:</P>
+<UL>
+<LI><B>sigprocmask</B> - setarea semnalelor blocate pentru un proces</LI>
+<LI><B>sigpending</B> - obtinerea semnalelor aflate in stare de asteptare pentru a fi tratate</LI>
+<LI><B>sigsuspend</B> - echivalent <I>pause()</I> cu optiunea de a seta o masca pentru semnalele tratate</LI>
+<LI><B>sigfillset, sigdelset, sigaddset</B> - pentru manipularea de seturi de semnale</LI>
+</UL>
+
+<H2><A name="C3">Exercitii</A></H2>
+
+<P>1. Scrieti un program in care se porneste un proces copil. In functie de paritatea pid-ului procesului copil, parintele ii va transmite acestuia un mesaj prin intermediul unui fisier, mesajul fiind preluat si afisat de procesul copil (ex: daca pid-ul copilului este par - "Good morning!", altfel "Good night!"). Parintele va astepta finalizarea executiei copilului.
+<BR><A href="http://profs.info.uaic.ro/~eonica/rc/filetalk.c">Solutie</A></P>
+<P>2. Scrieti un program similar exemplului legat de exec prin care sa executati o alta comanda uzuala (ex: cat) prin intermediul functiei execl (hint: ls /bin pentru a vizualiza o serie de comenzi disponibile)</P>
+<P>3. Implementati executia lui execvp() folosind execv() (hint: find din exercitiile laboratorului anterior)
+<BR><A href="http://profs.info.uaic.ro/~eonica/rc/myexec.c">Solutie</A></P>
+<P>4. Sa se scrie un program care afiseaza din 3 in 3 secunde pid-ul procesului curent si a cata afisare este. La primirea semnalului SIGUSR1 va scrie intr-un fisier mesajul "Am primit semnal". Semnalul SIGINT va fi ignorat in primele 60 secunde ale rularii programului dupa care va fi tratat in mod implicit.
+<BR><A href="http://profs.info.uaic.ro/~eonica/rc/myalarm.c">Solutie</A></P>
+<P>5. Scrieti un program care sa porneasca trei procese copil. Procesul parinte nu se va termina inaintea finalizarii executiei copiilor. In primul proces copil executati comanda ps. In al doilea proces copil aflati si afisati id-ul procesului si returnati un cod de eroare diferit de 0. In al treilea proces copil trimiteti catre parinte un semnal utilizator care sa fie tratat (cu sigaction) prin afisarea unui mesaj. Procesul parinte va afisa codurile de iesire pentru fiecare din cele trei procese. Cum ati putea afla in procesul parinte care din copii a trimis semnalul utilizator? (hint: consultati manualul in legatura cu tratarea semnalelor)
+<BR><A href="http://profs.info.uaic.ro/~eonica/rc/processes.c">Solutie</A></P>
+
+</BODY></HTML>

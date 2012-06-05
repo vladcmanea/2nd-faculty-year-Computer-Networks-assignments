@@ -1,0 +1,33 @@
+#!/bin/bash
+
+declare -i N;
+
+if [ $# -eq 0 ];
+then
+    echo "Scrieti rangul termenului sirului lui Fibonacci: ";
+    read N;
+else
+    let N=$1;
+fi
+
+if [ $N -le 1 ];
+then
+    echo "Al $N-lea termen Fibonacci este $N";
+else
+
+    declare -i F0;
+    declare -i F1;
+    declare -i F2;
+
+    F0=0;
+    F1=1;
+
+    for i in `seq 2 $N`;
+    do
+        let F2=$F1+$F0;
+        let F0=$F1;
+        let F1=$F2;
+    done
+
+    echo "Al N-lea termen Fibonacci este $F2";
+fi

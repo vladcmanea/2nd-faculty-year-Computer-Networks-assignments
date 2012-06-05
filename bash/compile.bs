@@ -1,0 +1,53 @@
+#!/bin/bash
+
+if [ $# -eq 0 ];
+then
+    echo "Scrie numele fisierului";
+    read fisier;
+else
+    fisier=$1;
+fi
+
+baza=$(basename $fisier .c);
+
+declare -i loop;
+loop=1;
+
+while [ $loop -eq 1 ];
+do
+    echo "Doresti sa editezi programul $fisier? (da/nu) ";
+    read option0;
+
+    if [ $option0 == "da" ];
+    then
+        echo "Scrie editorul pentru programul $fisier!";
+        read option3;
+
+        $option3 $fisier;
+    fi
+
+    echo "Doresti sa compilezi programul $fisier? (da/nu) ";
+    read option;
+    if [ $option == "da" ];
+    then
+        echo $(gcc $fisier -o $baza 2> log${baza}.txt);
+        mesaj=$(cat log${baza}.txt);
+
+        if [ "$mesaj" == "" ];
+        then
+            echo "Programul $fisier a fost compilat cu succes. Doresti sa-l executi?";
+            read option2;
+            if [ $option2 == "da" ];
+            then
+                ./$baza;
+                echo "Programul $fisier a fost executat.";
+            fi
+            loop=0;
+        else
+            echo "Programul $fisier a avut erori de compilare: $mesaj";
+            sleep 3;
+        fi
+    else
+        loop=0;
+    fi
+done

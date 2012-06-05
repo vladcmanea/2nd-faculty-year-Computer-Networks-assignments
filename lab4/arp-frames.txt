@@ -1,0 +1,44 @@
+Frame 92 (60 bytes on wire, 60 bytes captured)
+    Arrival Time: Feb 24, 2004 15:44:17.147074000
+    Time delta from previous packet: 9.972486000 seconds
+    Time relative to first packet: 9.972486000 seconds
+    Frame Number: 92
+    Packet Length: 60 bytes
+    Capture Length: 60 bytes
+Ethernet II, Src: 00:02:b3:89:46:25, Dst: 00:02:44:27:6f:e3
+    Destination: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Source: 00:02:b3:89:46:25 (Intel_89:46:25)
+    Type: ARP (0x0806)
+    Trailer: 00000000000000000000000000000000...
+Address Resolution Protocol (request)
+    Hardware type: Ethernet (0x0001)
+    Protocol type: IP (0x0800)
+    Hardware size: 6
+    Protocol size: 4
+    Opcode: request (0x0001)
+    Sender MAC address: 00:02:b3:89:46:25 (Intel_89:46:25)
+    Sender IP address: 193.231.30.129 (193.231.30.129)
+    Target MAC address: 00:00:00:00:00:00 (00:00:00_00:00:00)
+    Target IP address: 193.231.30.177 (193.231.30.177)
+
+Frame 93 (42 bytes on wire, 42 bytes captured)
+    Arrival Time: Feb 24, 2004 15:44:17.147103000
+    Time delta from previous packet: 0.000029000 seconds
+    Time relative to first packet: 9.972515000 seconds
+    Frame Number: 93
+    Packet Length: 42 bytes
+    Capture Length: 42 bytes
+Ethernet II, Src: 00:02:44:27:6f:e3, Dst: 00:02:b3:89:46:25
+    Destination: 00:02:b3:89:46:25 (Intel_89:46:25)
+    Source: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Type: ARP (0x0806)
+Address Resolution Protocol (reply)
+    Hardware type: Ethernet (0x0001)
+    Protocol type: IP (0x0800)
+    Hardware size: 6
+    Protocol size: 4
+    Opcode: reply (0x0002)
+    Sender MAC address: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Sender IP address: 193.231.30.177 (193.231.30.177)
+    Target MAC address: 00:02:b3:89:46:25 (Intel_89:46:25)
+    Target IP address: 193.231.30.129 (193.231.30.129)

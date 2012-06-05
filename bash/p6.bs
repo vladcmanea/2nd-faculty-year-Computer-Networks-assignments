@@ -1,0 +1,33 @@
+#!/bin/bash
+
+declare -i b;
+declare -i e;
+
+if [ $# -lt 1 ];
+then
+    echo "Scrieti baza: ";
+    read b;
+else
+    b=$1;
+fi
+
+if [ $# -lt 2 ];
+then
+    echo "Scrieti exponentul: ";
+    read e;
+else
+    e=$2;
+fi
+
+declare -i r;
+declare -i k;
+r=1;
+k=1;
+
+while [ $k -le $e ];
+do
+    r=r*$b;
+    k=k+1;
+done
+
+echo "Valoarea lui $b ^ $e este $r";

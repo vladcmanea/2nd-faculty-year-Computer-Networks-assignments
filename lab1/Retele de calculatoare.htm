@@ -1,0 +1,472 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0047)http://profs.info.uaic.ro/~eonica/rc/lab01.html -->
+<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Retele de calculatoare</TITLE>
+</HEAD><BODY>
+<H1>Laborator 1</H1>
+<H2>Tematica laboratorului</H2>
+<UL>
+<LI>Prezentarea tematicii generale a laboratoarelor si a sistemului de evaluare</LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab01.html#C1">Recapitulare bash. Comenzi uzuale</A></LI>
+<LI>Recapitulare programare C sub Linux</LI>
+	<UL>
+	<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab01.html#C2">Generalitati</A></LI>
+	<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab01.html#C3">Rutine de sistem pentru manipularea fisierelor</A></LI>
+	<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab01.html#C4">Manipularea fisierelor prin functii de librarie</A></LI>
+	<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab01.html#C5">Lucrul cu directoare</A></LI>
+	<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab01.html#C6">Managementul memoriei</A></LI>
+	</UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab01.html#C7">Exercitii</A></LI>
+</UL>
+
+<H2><A name="C1">Recapitulare bash. Comenzi uzuale</A></H2>
+<P>
+O posibila definitie pentru un shell ar fi cea de interpretor de comenzi ce asigura o interfata intre utilizator si sistemul de operare. Bash (Bourne again shell) este unul din cele mai utilizate shell-uri de consola UNIX la momentul curent si totodata cel implicit in majoritatea distributiilor de Linux existente.<BR>
+Comenzile de la nivelul shellului pot fi interne (implementate in cadrul shellului) sau externe (reprezinta simple programe consola). Ca si primele si cele din a doua categorie pot fi rulate in mod normal prin simpla apelare a comenzii (cu optiuni si parametri dupa caz), fiind pozitionati in orice director al sistemului, chiar daca nu sunt proprii shellului. Apelul din orice director este posibil deoarece shellul va cauta comanda in directoarele specificate prin intermediul variabilei de sistem PATH, iar in mod uzual, dupa instalare aceasta variabila va include si directoarele ce contin majoritatea comenzilor. Continutul variabilei PATH poate fi consultat (ca orice alta variabila de fapt) prin intermediul apelului <I>echo $PATH</I>. Evident, in cazul in care variabila PATH nu contine calea spre directorul unde se regaseste comanda, aceasta nu va putea fi apelata decat folosind calea completa plecand de la radacina <I>/</I>, sau o cale relativa la directorul curent <I>.</I> sau la cel parinte <I>..</I><BR>
+Aducem aminte cu acest prilej directoarele ce se regasesc in cadrul distributiilor standard de Linux:</P>
+<UL>
+<LI>/ - directorul radacina</LI>
+<LI>bin - diverse executabile necesare sistemului, aici aflandu-se de exemplu shellurile si comenzile externe </LI>
+<LI>boot - fisiere necesare la incarcarea sistemului, printre care si imaginea binara a kernelului sistemului de operare </LI>
+<LI>dev - fisiere utilizate pentru interfatarea cu dispoztivele sistemului (fizice si logice)</LI>
+<LI>etc - fisiere de configurare ale sistemului cum ar fi /etc/passwd - informatii despre utilizatori, /etc/group - informatii despre grupurile de utilizatori, /etc/services - informatii despre serviciile de retea (indicativele numerice ale porturilor), /etc/protocols - protocoalele de retea suportate</LI>
+<LI>home - subdirectoarele utilizatorilor</LI>
+<LI>lib - librarii partajabile ce sunt utilizate de sistem sau de catre diverse aplicatii</LI>
+<LI>mnt - sisteme de fisiere temporar atasate arborelui de directoare curent (montate utilizand comanda mount) in vederea accesarii, cum ar fi de exemplu cdrom-ul sau partitiile de windows</LI>
+<LI>proc - intrari virtuale corespunzatoare proceselor din sistem cu informatii despre acestea si date despre resursele utilizate (CPU, RAM)</LI>
+<LI>sbin - executabile de administrare destinate utilizarii de catre root</LI>
+<LI>tmp - director pentru datele temporare</LI>
+<LI>usr - aplicatii destinate utilizatorilor sistemului</LI>
+<LI>usr/bin - executabile ale aplicatiilor</LI>
+<LI>usr/doc - documentatie pentru aplicatii</LI>
+<LI>usr/include - fisiere header pentru dezvoltarea de programe C/C++</LI>
+<LI>usr/lib - librarii utilizate de aplicatii</LI>
+<LI>usr/local - aplicatii ce in mod normal sunt destinate doar utilizarii pe masina locala (ca exemplu directorul usr poate fi plasat fizic pe alta masina si partajat de mai multe statii de lucru; in acest caz aplicatiile de pe masina curenta vor fi instalate in usr/local)</LI>
+<LI>usr/sbin - alte executabile decat cele din sbin pentru administrarea sistemului</LI>
+<LI>usr/src - sursele aplicatiilor</LI>
+<LI>var - fisiere de dimensiune variabila ce se modifica frecvent (cum ar fi log-urile de exemplu)</LI>
+</UL>
+<BR>
+<P>Informatii de baza depre o comanda, optiunile si parametrii ei, se pot obtine in general prin rularea comenzii cu optiunea --help, suportata in majoritatea cazurilor. Informatii detaliate despre comanda pot fi obtinute prin apelul <I>man comanda</I> sau <I>info comanda</I>.  
+</P>
+
+<H3>Comenzi pentru operatii asupra sistemului de fisiere</H3>
+<UL>
+<LI><B>ls</B> - Listeaza fisierele dintr-un director, implicit cel curent. Folosind optiunea -l intrarile despre fisiere sunt afisate in format detaliat. Optiunea -a are ca rezultat si afisarea fisierelor ascunse (al caror nume incepe cu .)</LI>
+<LI><B>stat [optiuni] [cale]</B> - Afiseaza diverse informatii in functie de optiunile date despre fisierul/directorul aflat in calea introdusa ca parametru</LI>
+<LI><B>cp [sursa] [destinatie]</B> - Copie fisierul sursa in locatia destinatie. Comanda poate avea si rol de redenumire in cazurile unde calea destinatie este terminata cu (sau chiar reprezinta) un nume de fisier. Comanda este utilizata si in copierea directoarelor, caz in care este folosita in general optiunea -r ce are ca efect copierea recursiva si a subdirectoarelor incluse.</LI>
+<LI><B>mv [sursa] [destinatie]</B> - Muta sursa in destinatie. Are practic acelasi efect ca si cp, cu deosebirea ca sursa este stearsa ulterior operatiei de mutare</LI>
+<LI><B>rm [cale]</B> - Sterge fisierul specificat in cale. Pentru ca apelul comenzii sa nu necesite o confirmare aditionala se utilizeaza optiunea -f (force). Pentru stergerea directoarelor se foloseste optiunea -r pentru ca stergerea sa se realizeze recursiv si la nivel de subdirectoare.</LI>
+<LI><B>cd [cale]</B> - Schimbarea caii curente</LI>
+<LI><B>mkdir [cale]</B> - Crearea directorului specificat in cale</LI> 
+</UL>
+<P>Pentru mai multe informatii asupra comenzilor enumerate consultati manualul. 
+</P>
+
+<H3>Comenzi pentru operatii cu fisiere text</H3>
+<UL>
+<LI><B>cat [fisier]</B> - Apelata in acest mod afiseaza continutul intregului fisier pe ecran (destinatia principala a comenzii este de fapt de a concatena fisiere)</LI>
+<LI><B>less [fisier]</B> - Afiseaza continutul fisierului pagina cu pagina, permitand actiuni avansate cum ar fi de exemplu cautarea in cadrul fisierului.</LI>
+<LI><B>head [fisier]</B> - Afiseaza primele linii din cadrul fisierului (implicit 10, numarul acestora se poate specifica prin optiunea -n; ex: -n9 pentru 9 linii)</LI>
+<LI><B>tail [fisier]</B> - Similar cu head pentru ultimele linii din cadrul fisierului</LI>
+<LI><B>grep [expresie regulata] [fisier]</B> - Cauta si afiseaza liniile din cadrul fisierului care respecta expresia regulata.</LI>
+<LI><B>cut [optiuni] [fisier]</B> - Extrage anumite campuri din liniile unui fisier pe baza optiunilor selectate.</LI>
+<LI><B>diff [fisier1] [fisier2]</B> - Compara fisierele si evidentiaza diferentele</LI>
+<LI><B>wc [fisier]</B> - (word count) Afiseaza numarul de linii, cuvinte si caractere dintr-un fisier</LI>
+</UL>
+<P>Pentru mai multe informatii asupra comenzilor enumerate consultati manualul.<BR>
+Pentru editarea fisierelor text sunt disponibile la nivelul shellului diverse editoare mai simple si usor de utilizat cum ar fi nano, mcedit sau mai complexe ca emacs sau vim.
+</P>
+
+<H3>Drepturi de acces</H3>
+<P>
+Drepturile de acces asupra unui fisier sunt vizibile in urma apelului comenzii ls cu optiunea -l. Acestea pot fi observate in primul camp dintr-o intrare corespunzatoare unui fisier. Acest camp ce contine 10 caractere este format din patru subcampuri. Primul subcamp este format dintr-un singur caracter ce identifica tipul de fisier ('-' fisier normal, 'd' director, 'p' pipe cu nume, etc). Urmatoarele subcampuri identifica drepturile de acces asupra fisierului. Fiecare dintre subcampurile ce indica drepturile sunt formate din cate trei caractere ce pot fi '-' in caz ca nu exista un anumit drept, sau respectiv in ordine dupa semnificatie: 'r' exista drept de citire, 'w' exista drept de scriere si 'x' exista drept de executie. Un subcamp ce ar indica deci drepturile complete ar fi 'rwx'. Primul dintre subcampurile de drepturi este asociat proprietarului fisierului, urmatorul grupului de care apartine acesta, si ultimul restului de utilizatori. Astfel un set de drepturi de acces de citire, scriere si executie pentru proprietarul unui fisier obisnuit, si doar de citire in rest ar arata in felul urmator: -rwxr--r-- .<BR>
+In cazul directoarelor, dreptul de executie se refera la dreptul de a schimba calea curenta spre directorul respectiv si de a accesa efectiv continutul acestuia, nu de a lista continutul acestuia (acesta fiind dreptul de citire). Cand pentru un director, in locul dreptului de executie 'x', se intalneste 't', inseamna ca respectivul director are un asa numit bit sticky setat. Aceasta semnifica faptul ca stergerea sau modificarea fisierelor din cadrul acelui director pot fi efectuate doar de catre proprietarii acestora.<BR>
+Alta valoare ce poate fi intalnita in locul dreptului obisnuit de executie 'x', este 's', ce indica, dupa localizarea in subcampul de drepturi, faptul ca un fisier are setat un bit SUID (Set User ID) sau un bit SGID (Set Group ID). Acest bit arata faptul ca executia fisierului va fi realizata de oricine cu permisiunile proprietarului, respectiv grupului de care apartine. Utilizarea principala a acestui mecanism este de a permite altor utilizatori sa execute o comanda ce necesita drepturi de root.<BR>
+Modificarea drepturilor de acces se poate realiza prin intermediul comenzii <I>chmod [categorie utilizatori] [+-=] [drepturi] [cale]</I>. Categoria utilizatori arata caror utilizatori (subcamp din campul drepturilor) li se aplica modificarea si poate fi 'u' - proprietar, 'g' - grup, 'o' - ceilalti sau 'a' - toate categoriile. '+' , '-' sau '=' indica adaugarea, eliminarea, sau setarea directa a unor drepturi fata de, sau respectiv in locul celor existente deja. Drepturile sunt specificate prin caracterele asociate specificate deja mai sus ('r', 'w', 'x', etc). Urmatorul argument reprezinta calea spre fisierul sau directorul asupra caruia se realizeaza modificarea drepturilor. Comanda chmod poate fi apelata si utilizand valori octale specificate direct pentru setarea drepturilor pentru cele trei categorii de utilizatori. Pentru mai multe informatii, consultati manualul. 
+</P>
+
+<H3>Redirectarea intrarilor si iesirilor</H3>
+<P>
+Dizpozitivile logice de intrare/iesire sunt urmatoarele: intrarea standard - stdin, de unde se citesc datele de intrare, avand asociata implicit tastatura; iesirea standard - stdout, unde sunt afisate datele de iesire, avand asociat implicit terminalul si iesirea de eroare standard - stderr, unde sunt afisate erorile, avand asociat implicit deasemeni terminalul.<BR>
+Redirectionarea intrarilor si iesirilor se poate face la nivelul shellului prin intermediul unor operatori de redirectare. Astfel, redirectarea intrarii se realizeaza prin intermediul operatorului '&lt;'. Spre exemplu, [program] &lt; [fisierin], va prelua datele de intrare pentru program din fisierin, chiar daca in mod normal acestea ar fi preluate de la tastatura. Redirectarea iesirii se face prin intermediul operatorului '&gt;'. Extinzand exemplul anterior, [program] &lt; [fisierin] &gt; [fisierout], pe langa redirectarea intrarii, va scrie datele de iesire in fisierout, in loc de a le afisa la nivelul terminalului. Daca pentru redirectarea iesirii se foloseste operatorul '&gt;&gt;', datele vor fi adaugate la sfarsitul noii destinatii de iesire, fara a suprascrie fisierul. Redirectarea iesirii de eroare se face prin operatorul '2&gt;'.<BR> 
+Redirectarea iesirii unei comenzi, ca intrare pentru o alta comanda, se poate face intr-un singur pas prin utilizarea mecanismului pipe, prin inlantuirea comenzilor, separate de operatorul '|'. Spre exemplu, daca ne-am afla intr-un director ce contine foarte multe fisiere, am putea afisa continutul acestuia, treptat, utilizand ls | less . 
+</P>
+
+<H2><A name="C2">Programare C sub Linux. Generalitati</A></H2>
+<P>Compilarea unei surse C sub Linux se va realiza utilizand gcc (in cazul unei surse C++ compilatorul este g++). Apelarea gcc pasand ca argument un fisier C fara o alta optiune, de exemplu:</P>
+<PRE>gcc file.c</PRE>
+<P>va produce (in cazul in care nu sunt intalnite erori) un executabil cu numele implicit <I>a.out</I> plasat in directorul curent, in urma compilarii si linkarii fisierului initial. <BR>
+Pentru a specifica un nume pentru fisierul output se foloseste optiunea <I>-o</I> urmata de acest nume. Exemplu:</P>
+<PRE>gcc file.c -o outexe</PRE>
+<P>Simpla compilare pentru obtinerea unui fisier obiect (fara linkare) dintr-o sursa C, se poate realiza adaugand optiunea <I>-c</I>:</P>
+<PRE>gcc -c file.c</PRE>
+<P>Rezultatul va fi un fisier obiect numit <I>file.o</I> . Acesta poate trece prin procesul de linking ulterior pasandu-l ca argument unui alt apel gcc. <BR>
+In mod implicit, pentru a include headerele specificate in sursele compilate, gcc va cauta in directorul curent si in directoarele ce contin headerele librariilor standard. Daca este necesara includerea de fisiere header din alta sursa se va folosi optiunea <I>-I</I> urmata de calea respectiva:</P>
+<PRE>gcc -I ./custom/include file.c -o outexe</PRE>
+<P>Pentru linkarea unei librarii (biblioteca), in vederea obtinerii executabilului final se va folosi optiunea <I>-l</I> urmata imediat de partea din numele librariei aflata dupa prefixul <I>lib</I> si inainte de sufixul (extensia) <I>.a</I> (acest format de nume este cel intalnit in mod normal pentru biblioteci). Spre exemplu libraria de functii matematice standard se numeste <I>libm.a</I> . Pentru a linka aceasta librarie se va folosi un apel gcc de genul:</P>
+<PRE>gcc -lm file.c -o outexe</PRE>
+<P>Daca libraria nu se gaseste in locatiile standard pentru librarii, pentru a fi gasita de linker, este necesara specificarea explicita a locatiei (inclusiv cazul directorului curent), folosind optiunea <I>-L</I>, intr-un mod similar utilizarii optiunii <I>-I</I> pentru locatii de headere </P>
+
+<H2><A name="C3">Rutine de sistem pentru manipularea fisierelor</A></H2>
+
+<P>Un descriptor de fisier este un simplu intreg utilizat ca index intr-o tabela de fisiere deschise de un proces.<BR>
+Reamintim descriptorii standard:</P>
+<UL>
+<LI>0 asociat stdin - intrarea standard</LI>
+<LI>1 asociat stdout - iesirea standard</LI>
+<LI>2 asociat stderr - streamul de eroare standard</LI>
+</UL>
+
+<P>Rutinele I/O cele mai utilizate pentru accesul si manipularea fisierelor prin intermediul descriptorilor sunt:</P>
+<UL>
+
+<LI>
+<H3>open()</H3> - deschiderea unui fisier
+<P>Headerele necesare si prototipurile functiei:</P>
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;fcntl.h&gt;
+
+int open(const char *pathname, int flags);
+int open(const char *pathname, int flags, mode_t mode);
+</PRE> 
+<UL>
+<LI>pathname - calea catre fisier</LI>
+<LI>flags - optiuni de deschidere a fisierului (ex: O_RDWR - acces citire si scriere)</LI>
+<LI>mode - specificarea explicita a permisiunilor asupra fisierului in cazul crearii acestuia (ex: S_IRWXU - utilizatorul owner are drepturi de citire, scriere si executie)</LI>
+</UL>
+<P>Functia returneaza descriptorul asociat fisierului in caz de succes si -1 in caz de eroare</P>
+</LI>
+
+<LI>
+<H3>close()</H3> - inchiderea unui fisier
+<P>Headerele necesare si prototipurile functiei:</P>
+<PRE>#include &lt;unistd.h&gt;
+
+int close(int fd);
+</PRE> 
+<UL>
+<LI>fd - descriptorul asociat fisierului (cel returnat la deschidere)</LI>
+</UL>
+<P>Functia returneaza 0 in caz de succes si -1 in caz de eroare</P>
+</LI>
+
+<LI>
+<H3>read()</H3> - citirea dintr-un fisier
+<P>Headerele necesare si prototipurile functiei:</P>
+<PRE>#include &lt;unistd.h&gt;
+
+ssize_t read(int fd, void *buf, size_t count);
+</PRE> 
+<UL>
+<LI>fd - descriptorul asociat fisierului (cel returnat la deschidere)</LI>
+<LI>buf - pointer la bufferul destinatie ce va retine datele citite</LI>
+<LI>count - numarul de bytes specificat pentru a fi citit</LI>
+</UL>
+<P>Functia returneaza numarul de bytes cititi cu succes in caz de reusita si -1 in caz de eroare</P>
+</LI>
+
+<LI>
+<H3>write()</H3> - scrierea intr-un fisier
+<P>Headerele necesare si prototipurile functiei:</P>
+<PRE>#include &lt;unistd.h&gt;
+
+ssize_t write(int fd, void *buf, size_t count);
+</PRE> 
+<UL>
+<LI>fd - descriptorul asociat fisierului (cel returnat la deschidere)</LI>
+<LI>buf - pointer la bufferul sursa ce contine datele ce vor fi scrise in fisier</LI>
+<LI>count - numarul de bytes specificat pentru a fi scris</LI>
+</UL>
+<P>Functia returneaza numarul de bytes scrisi cu succes in caz de reusita si -1 in caz de eroare</P>
+</LI>
+
+<LI>
+<H3>fcntl()</H3> - File control - executia a diverse comenzi asupra fisierului
+<P>Headerele necesare si prototipurile functiei:</P>
+<PRE>#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+
+int fcntl(int fd, int cmd);
+int fcntl(int fd, int cmd, long arg);
+int fcntl(int fd, int cmd, struct flock *lock);
+</PRE> 
+<UL>
+<LI>fd - descriptorul asociat fisierului (cel returnat la deschidere)</LI>
+<LI>cmd - constanta ce defineste comanda de executat (ex: F_GETFL - obtinerea flagurilor de stare a fisierului)</LI>
+<LI>arg - argument specific in functie de comanda</LI>
+<LI>lock - structura specifica utilizata in cazul comenzilor legate de lock (ex: pt blocaj la scriere/citire)</LI> 
+</UL>
+<P>Valoarea de retur a functiei depinde de comanda</P>
+</LI>
+
+<LI>
+<H3>lseek()</H3> - setarea pozitiei curente in cadrul fisierului
+<P>Headerele necesare si prototipurile functiei:</P>
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+
+off_t lseek(int fildes, off_t offset, int whence);
+</PRE> 
+<UL>
+<LI>fildes - descriptorul asociat fisierului (cel returnat la deschidere)</LI>
+<LI>offset - noua pozitie specificata in bytes fata de referinta (negativ - inainte, pozitiv - dupa)</LI>
+<LI>whence - referinta: SEEK_SET inceputul fisierului, SEEK_CUR pozitia curenta in fisier, SEEK_END sfarsitul fisierului</LI>
+</UL>
+<P>Functia returneaza offsetul in bytes fata de inceputul fisierului in caz de reusita si -1 in caz de eroare</P>
+</LI>
+
+</UL>
+
+<H3>Alte rutine: </H3>
+<UL>
+	<LI>ioctl() - manipularea fisierelor speciale asociate diverselor device-uri (ex: terminalul, placa de sunet, etc)</LI>
+	<LI>fsync() - rol de flush, scrie pe disc sau pe alt suport datele din memorie asociate unui fisier</LI>
+	<LI>ftruncate() - imparte (sectioneaza) un fisier la o anumita lungime</LI>
+	<LI>fstat() - returneaza informatii despre un fisier intr-o structura specializata (stat)</LI>
+	<LI>fchown() - modifica owner-ul sau grupul asociat cu un fisier deschis</LI>
+	<LI>fchmod() - modifica permisiunile de acces la fisier</LI>
+	<LI>fchdir() - schimba calea, directorul curent</LI>
+	<LI>flock() - seteaza lock-uri (blocaje) pe fisiere (regim advisory - uz cooperant - fisierul poate fi accesat din alt proces daca acesta nu face de asemeni uz de rutina pentru a verifica blocajele)</LI>
+	
+</UL>
+
+<H2><A name="C4">Manipularea fisierelor prin functii de librarie</A></H2>
+
+<P>In afara de utilizarea rutinelor de sistem ce permit accesul la fisiere prin intermediul descriptorilor, acestea pot fi manipulate de asemeni prin intermediul pointerului FILE * si a functiilor oferite de libraria stdio, ce permit optiuni mai avansate in anumite cazuri cum ar fi spre exemplu scrierea si citirea din fisier din perspectiva formatarii datelor.</P>
+<P>Asemeni descriptorilor de fisier, la pornirea unui program ce utilizeaza libraria stdio, la fiecare din cele trei streamuri standard deschise, exista cate un pointer de tip FILE * cu numele stdin, stdout si stderr</P>
+
+<P>Principalele operatii cu fisiere utilizand libraria stdio sunt:</P>
+<UL>
+
+<LI>
+<H3>Deschiderea si inchiderea fisierelor</H3>
+<UL>
+<LI>
+<PRE>FILE *fopen(const char *path, const char *mode);</PRE>
+Deschide un fisier.<BR>
+Parametri: path - calea catre fisier, mode - mod deschidere (ex: "r+" - read si write)<BR>
+Retur: pointer la fisierul deschis si NULL in caz de eroare<BR><BR>
+</LI>
+<LI>
+<PRE>int fclose(FILE * stream);</PRE>
+Inchide un fisier.  <BR>
+Parametri: stream - pointer la un fisierur ce va fi inchis<BR>
+Retur: 0 in caz de succes, -1 (EOF - End Of File) in caz de eroare<BR><BR>
+</LI>
+</UL>
+</LI>
+
+<LI>
+<H3>Citirea si scrierea in fisier</H3>
+<H4>Varianta neformatata</H4>
+<PRE>size_t fread( void *ptr, size_t size, size_t nmemb, FILE *stream);
+size_t fwrite( const void *ptr, size_t size, size_t nmemb, FILE *stream);
+</PRE>
+<UL>
+<LI>ptr - pointer la un buffer destinatie pentru datele citite, respectiv sursa pentru cele scrise</LI>
+<LI>size - dimensiunea unui bloc (record) de citit/scris in bytes</LI>
+<LI>nmemb - numarul de blocuri (records) de citit/scris</LI>
+<LI>stream - pointer la fisierul din care se citeste/in care se scrie</LI>
+<LI>Retur: numarul de blocuri (records) citite/scrise cu succes</LI>
+</UL>
+<H4>Varianta formatata</H4>
+<P>Familii de functii bazate pe utilizarea de specificatori de format pentru formatarea datelor (ex.: "%d" - intreg, etc)</P>
+<P>Signatura tipica: functie (destinatie/sursa, specificator de format, date scrise/citite);</P>
+<P>Scriere</P>
+<PRE>int printf(const char *format, ...); - scrie implicit la stdout
+int fprintf(FILE *stream, const char *format, ...); - scrie in fisierul specificat de stream
+int sprintf(char *str, const char *format, ...); - scrie intr-un buffer de caractere specificat de str
+</PRE>
+<P>Citire (similar cu cele de la scriere)</P>
+<PRE>int scanf( const char *format, ...);
+int fscanf( FILE *stream, const char *format, ...);
+int sscanf( const char *str, const char *format, ...);
+</PRE>
+<P>Returneaza numarul de caractere scrise/citite fara terminatorul de sir adaugat implicit ('\0') si o valoare negativa in caz de eroare</P>
+<H4>Varianta bazata pe functii cu efect la nivel de caracter si linie</H4>
+<P>Este vorba de familiile de functii utilizate pentru a scrie/citi cate un caracter sau o linie din fisier la un singur apel</P>
+<PRE>int fgetc(FILE *stream);			- citeste un caracter din stream
+char *fgets(char *s, int size, FILE *stream);	- citeste size-1 caractere din stream pana la maxim sfarsitul liniei curente
+int getc(FILE *stream);				- la fel ca fgetc
+int getchar(void);				- citeste un caracter de la stdin implicit
+char *gets(char *s);				- citeste o linie de la stdin implicit
+
+int fputc(int c, FILE *stream);			- scrie un caracter in stream
+int fputs(const char *s, FILE *stream);		- scrie o linie in stream
+int putc(int c, FILE *stream);			- la fel ca fputc
+int putchar(int c);				- scrie un caracter la stdout implicit
+int puts(const char *s);			- scrie o linie la stdout implicit
+</PRE>
+</LI>
+
+<LI>
+<H3>Functii pentru obtinerea starii fisierului</H3>
+<PRE>int feof( FILE *stream);
+int ferror( FILE *stream);
+void clearerr( FILE *stream);
+</PRE>
+<UL>
+<LI>feof - in cazul incercarii de citire dupa ce se ajunge la finalul fisierului va fi setat un flag intern de End Of File iar valoarea returnata de aceasta functie va fi diferita de 0</LI>
+<LI>ferror - returneaza o valoare nenula daca un flag intern de eroare al fisierului este setat (de exemplu daca incercam sa scriem intr-un fisier deschis doar cu drepturi de citire)</LI>
+<LI>clearerr - reseteaza flagurile de EOF si de eroare</LI> 
+</UL> 
+</LI>
+<BR>
+<LI>
+<H3>Functii de pozitionare in fisier</H3>
+<PRE>int fseek( FILE *stream, long offset, int whence);
+long ftell( FILE *stream);
+void rewind( FILE *stream);
+</PRE>
+<UL>
+<LI>fseek - seteaza pozitia in fisier fata de referinta; argumentele sunt similare lseek</LI>
+<LI>ftell - returneaza pozitia curenta in fisier</LI>
+<LI>rewind - seteaza pozitia in fisier la 0</LI> 
+</UL>
+</LI>
+
+</UL>
+
+<P>In general, in cazul esecului unei functii din cele mentionate, codul de eroare va fi retinut in variabila globala errno. Pentru detalii asupra diverselor coduri de eroare consultati intrarea din manual corespunzatoare functiei (in general man 2 functie sau man 3 functie)</P>
+
+<H2><A name="C5">Lucrul cu directoare</A></H2>
+<P>Operatiile legate de accesul la directoare sunt facilitate prin structurile de date si functiile puse la dispozitie de headerul dirent.h<BR>
+Structurile de date necesare pentru operatiile cu directoare sunt: <BR> 
+DIR - reprezinta, s-ar putea spune, intrarea efectiva pe disc de tip director, in sensul unui stream - fisier - ce contine o serie de intrari (subdirectoare si alte fisiere)<BR>
+struct dirent - reprezinta o structura de informatii asociata unei structuri DIR ce contine diverse informatii relativ la o intrare din respectivul director cum ar fi numele in campul <I>d_name</I> de tip vector de char sau tipul intrarii (fisier sau director) in campul <I>d_type</I><BR>
+Functiile disponibile pentru lucrul cu directoare sunt urmatoarele:</P>
+<UL>
+
+<LI>
+<H3>opendir()</H3> - "deschiderea" unui director
+<PRE>DIR* opendir(const char* dirname)</PRE>
+<UL>
+<LI>dirname - pointer la calea respectivului director</LI>
+<LI>retur - un pointer la o structura DIR, corespunzand primei intrari din respectivul director in caz de succes si null in caz de eroare</LI>
+</UL>
+</LI>
+<BR>
+<LI>
+<H3>readdir()</H3> - citirea informatiilor despre o intrare din director
+<PRE>struct dirent* readdir(DIR* dirp)</PRE>
+<UL>
+<LI>dirp - pointer la o intrare din cadrul directorului</LI>
+<LI>retur - un pointer la o structura dirent corespunzatoare intrarii indicate de pointerul DIR, urmata de avansarea la urmatoarea intrare din acelasi director sau null in caz ca nu mai exista alta intrare si de asemeni in caz de eroare (cu diferenta ca in acest ultim caz este setata si variabila errno)</LI>
+</UL> 
+</LI>
+<BR>
+<LI>
+<H3>rewinddir()</H3> - repozitionarea la prima intrare din cadrul directorului
+<PRE>void rewinddir(DIR* dirp)</PRE>
+<UL>
+<LI>dirp - pointer la o intrare oarecare din cadrul directorului in care se realizeaza repozitionarea</LI> 
+</UL>
+</LI>
+<BR>
+<LI>
+<H3>telldir()</H3> - obtinerea indexului unei intrari din cadrul directorului
+<PRE>off_t telldir(DIR* dirp)</PRE>
+<UL>
+<LI>dirp - pointer la o intrare din cadrul directorului</LI>
+<LI>retur - un intreg ce reprezinta pozitia curenta a intrarii in cadrul directorului si -1 in caz de eroare</LI>
+</UL>
+</LI>
+<BR>
+<LI>
+<H3>seekdir()</H3> - pozitionarea la o anumita intrare in cadrul directorului
+<PRE>void seekdir(DIR *dir, off_t offset)</PRE>
+<UL>
+<LI>dir - pointer la intrarea curenta in cadrul directorului</LI>
+<LI>offset - noua pozitie care va indica intrarea curenta</LI>
+</UL> 
+</LI>
+<BR>
+<LI>
+<H3>closedir()</H3> - "inchiderea" directorului
+<PRE>int closedir(DIR* dirp)</PRE>
+<UL>
+<LI>dirp - pointer la o intrare in cadrul directorului</LI>
+<LI>retur - 0 daca inchiderea s-a efectuat cu succes, insemnand ca pointerul dirp nu va mai fi valid pentru respectivul director, sau -1 in caz de esec</LI>
+</UL>
+</LI>
+
+</UL>
+
+<H2><A name="C6">Managementul memoriei - quick reminder</A></H2>
+
+<P>In aceasta sectiune reamintim principalele functii de management a memoriei din limbajul C. Acestea cer includerea in program a stdlib.h:</P>
+
+<UL>
+
+<LI>
+<H3>malloc()</H3> - alocarea neinitializata a unui bloc de memorie
+<PRE>void *malloc(size_t size);
+</PRE>
+<UL>
+<LI>size - numarul de octeti de alocat</LI>
+<LI>retur - pointer la locatia de memorie alocata, NULL in caz de eroare</LI>
+</UL>
+</LI>
+<BR>
+<LI>
+<H3>calloc()</H3> - alocarea initializata cu 0 a unui bloc de memorie
+<PRE>void *calloc(size_t nmemb, size_t size);
+</PRE>
+<UL>
+<LI>nmemb - numarul de blocuri de alocat</LI>
+<LI>size - dimensiunea in octeti de alocat</LI>
+<LI>retur - pointer la locatia de memorie alocata, NULL in caz de eroare</LI>
+</UL>
+</LI>
+<BR>
+<LI>
+<H3>realloc()</H3> - redimensionarea unui bloc de memorie anterior alocat (fara initializare pentru dimensiunea adaugata)
+<PRE>void *realloc(void *ptr, size_t size);
+</PRE>
+<UL>
+<LI>ptr - pointer la un bloc de memorie alocat anterior; daca e NULL comportarea e similara malloc</LI>
+<LI>size - noua dimensiune; daca e 0 memoria e eliberata (similar free)</LI>
+<LI>retur - pointer la locatia de memorie alocata, NULL in caz de eroare</LI>
+</UL>
+</LI>
+<BR>
+<LI>
+<H3>free()</H3> - eliberarea unui bloc de memorie
+<PRE>void free(void *ptr);
+</PRE>
+<UL>
+<LI>ptr - pointer la o locatie de memorie alocata cu una din functiile anterioare</LI>
+</UL>
+</LI>
+</UL>
+
+
+<H2><A name="C7">Exercitii</A></H2>
+<B>Bash</B>
+<P>1. Ce efect are urmatoarea linie de comenzi: echo ` who | cut -c1-9 | sort | uniq ` &gt;&gt; users ? (hint: folositi man pentru a afla efectul comenzilor) Cum puteti pastra rezultatele partiale dintre fiecare din comenzile inlatuite prin pipe in fisiere separate pentru consultare ulterioara a stadiului de executie intermediar, fara a separa linia de comenzi in mai multe ? Realizati aceasta modificare. (hint: man tee) </P>
+<P>2. Folosind stat,grep,cut afisati inodul unui fisier. Se poate si mai simplu ? (hint: doar cu una din comenzi)</P>
+<P>3. Sa se afiseze toti utilizatorii care au numele conturilor
+terminate in "x".</P>
+<B>Lucrul cu fisiere</B>
+<P>1. Fiind dat urmatorul fisier - <A href="http://profs.info.uaic.ro/~eonica/rc/testpak">testpak</A>- scrieti un program care sa citeasca din acesta un "pachet" cu urmatoarea structura (utilizand primitive de sistem) si afisati continutul "campurilor" acestuia :</P>
+<UL>
+<LI>port sursa - intreg 0-65535</LI>
+<LI>port destinatie - intreg 0-65535</LI>
+<LI>lungime - intreg 0-65535</LI>
+<LI>checksum - intreg 0-65535</LI>
+<LI>date - sir de caractere de dimensiune 32</LI>
+</UL>
+<P>Luati in considerare compatibilitatea intre programul (sau sistemul) - necunoscut - care a scris fisierul si programul creat pentru a-l citi, atat in privinta posibilei reprezentari diferite a datelor cat si a posibilelor incompatibilitati ce tin de alinierea diverselor tipuri de date in memorie, stiind ca programul care a scris fisierul a "gasit" o solutie pentru a evita aceste inconveniente. 
+</P>
+<P><A href="http://profs.info.uaic.ro/~eonica/rc/packreader.c">Solutie</A></P>
+<P>2. Implementati un program care simuleaza find in mod recursiv. 
+</P>
+<P><A href="http://profs.info.uaic.ro/~eonica/rc/myfind.c">Solutie</A></P>
+<P>3. Sa se scrie un program care primeste ca argument un nume de fisier sau
+director la intrare, iar la iesire returneaza tipul intrarii de pe disc (fisier sau director) si momentul ultimei modificari. (hint: fstat)</P>
+<P>Solutia se gaseste ca exemplificare a utilizarii fstat() in finalul intrarii din manual</P>
+
+
+</BODY></HTML>

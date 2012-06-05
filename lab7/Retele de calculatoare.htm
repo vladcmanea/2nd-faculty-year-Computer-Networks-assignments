@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0047)http://profs.info.uaic.ro/~eonica/rc/lab07.html -->
+<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Retele de calculatoare</TITLE>
+</HEAD><BODY>
+
+<H1>Laborator 7</H1>
+<P></P>
+<H2>Tematica laboratorului</H2>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab07.html#C1">Client UDP</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab07.html#C2">Server UDP</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab07.html#C3">Tratarea simultana a clientilor</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab07.html#C4">Exercitii</A></LI>
+</UL>
+
+<P>
+
+</P><H2><A name="C1">Client UDP</A></H2>
+<P>Transmisiile prin UDP nu sunt orientate conexiune. Nerealizarea unei conexiuni explicite prin <I>connect()</I> constituie astfel principala deosebire la nivelul pasilor in programarea clientului UDP, fata de TCP. Cu exceptia acestui pas, restul pasilor sunt relativ similari (cu diferente insa in ce priveste functiile utilizate pentru efectuarea transferului de date):</P>
+<UL>
+<LI>
+<H3>1. Crearea unui socket</H3>
+Se face utilizand apelul socket() cu parametrii PF_INET, SOCK_DGRAM si IPPROTO_UDP.
+</LI>
+<BR><BR>
+<LI>
+<H3>2. Transferul de date</H3>
+Acesta poate fi realizat imediat dupa crearea socketului. Fiindca in acest caz nu se pune problema unei conexiuni a socketului clientului cu unul al serverului, clientul poate utiliza socketul creat pentru trimitere de date catre adrese diferite, si deasemeni de a primi date de la adrese diferite. In acest scop, primitivele de trimitere, primire utilizate in transmisiile UDP sunt:
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+ssize_t sendto(int s, const void *buf, size_t len, int flags, const struct sockaddr *to, socklen_t tolen);
+ssize_t recvfrom(int s, void *buf, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen);
+</PRE>
+Primii trei parametri ai acestor functii sunt similari cu cei din cadrul send(), respectiv recv(). Penultimul parametru este un pointer la o structura (de tip sockaddr_in ce va fi convertita prin cast) ce va retine adresa la care sunt trimise pachetele, respectiv de unde sunt primite. Ultimul parametru reprezinta dimensiunea structurii corespunzatoare destinatiei in primul caz, respectiv un pointer la o variabila ce va fi completata in urma apelului cu dimensiunea structurii corespunzatoare sursei in cel de-al doilea caz.
+</LI>
+<BR><BR>
+<LI>
+<H3>3. Terminarea transmisiei</H3>
+Se va face similar cazului clientului TCP prin apelul close().
+</LI>
+</UL>
+
+<H2><A name="C2">Server UDP</A></H2>
+<P>Un exemplu de baza pentru un server UDP va urma pasi similari cu ai clientului, fata de transmisia prin TCP avand ca diferente, datorita caracterului neorientat conexiune, lipsa apelurilor <I>listen()</I> si <I>accept()</I>. In consecinta datele vor fi primite si transmise prin intermediul socketului creat initial.</P>
+<UL>
+<LI>
+<H3>1. Crearea socketului</H3>
+Se face, ca si la client, utilizand apelul socket() cu parametrii PF_INET, SOCK_DGRAM si IPPROTO_UDP.
+</LI>
+<BR><BR>
+<LI>
+<H3>2. Asocierea socketului cu o adresa</H3>
+Se face utilizand apelul bind() ca si in cazul serverului TCP. 
+</LI>
+<BR><BR>
+<LI>
+<H3>3. Transferul de date</H3>
+Este realizat ca si in cazul clientului utilizand primitivele sendto() si recvfrom()
+</LI>
+<BR><BR>
+<LI>
+<H3>4. Terminarea transmisiei</H3>
+E realizata similar cu restul cazurilor prin apelul close().
+</LI>
+</UL>
+
+<H2><A name="C3">Tratarea simultana a clientilor</A></H2>
+<P>Serverul UDP prezentat nu este orientat conexiune, nefiind ca in cazul serverului TCP iterativ ocupat in mod obligatoriu cu tratarea unui singur client conectat la un moment dat (pasul 3 se poate constitui intr-o comunicare mai complexa cu diversi clienti). Totusi pentru o structurare mai eleganta a serverului se poate utiliza un model asemanator celui prezentat in cadrul laboratorului anterior in cazul serverului TCP concurent. Mai exact, in mod similar, serverul va crea procese fiu dedicate clientilor, pasii de mai sus fiind completati in modul urmator (la nivel de server si client):</P><P>
+</P><UL>
+<LI>1. Primii doi pasi ai serverului ( socket() si bind() ) raman neschimbati.</LI>
+<LI>2. Serverul va primi primul mesaj de la un client cu recvfrom() dupa care va instantia un proces fiu dedicat clientului respectiv prin fork() (primul mesaj trimis de client va fi unul dedicat stabilirii unei legaturi - in genul "login", comunicarea efectiva pornind ulterior) </LI>
+<LI>3. In procesul fiu creat serverul va crea un nou socket, la care va face bind() pe un port efemer si pe care il va folosi pentru a comunica mai departe cu respectivul client (utilizand adresa clientului primita in pasul anterior).</LI>
+<LI>4. Clientul va prelua din primul raspuns primit cu recvfrom() de la server noul port pe care il va folosi in comunicare mai departe.</LI> 
+<LI>5. Serverul reia executia intr-o bucla de la pasul 2 de mai sus pentru a trata un nou client.</LI>
+</UL>
+
+
+<P>Consultati, compilati si executati sursele pentru clientul si serverul echo din pagina cursului: <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S7/cliUdp.c">cliUdp.c</A> , <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S7/servUdp.c">servUdp.c</A> (<A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S7/Makefile">Makefile</A>)</P>
+
+<H2><A name="C4">Exercitii:</A></H2>
+<P>1. Creati o aplicatie de chat avand o arhitectura client-server UDP in care clientii vor avea la dispozitie urmatoarele functionalitati: </P>
+<UL>
+<LI>login nickname</LI> 
+<LI>send nickname otheruser msg</LI>
+<LI>sendall nickname msg</LI>
+<LI>who nickname</LI>
+<LI>logout nickname</LI>
+</UL>
+<P>Restrictii de implementare: </P>
+<UL>
+<LI>clientul poate trimite comenzi doar dupa login </LI>
+<LI>serverul nu permite existenta a doi clienti cu acelasi nume </LI>
+</UL>
+
+<P>2. [Optional] Dezvoltati un server UDP, urmand pasii descrisi (sau modificand direct
+exemplul din pagina cursului), care sa primeasca doua numere si un cod de
+operatie, sa calculeze rezultatul si sa-l trimita inapoi clientului.
+Serverul va primi ca argument portul la care face bind().<BR>
+Dezvoltati un client UDP, urmand pasii descrisi, (sau modificand direct
+exemplul din pagina cursului), care sa trimita doua numere si un cod de
+operatie ('+', '-', '*', '/') spre un server UDP, si sa receptioneze inapoi
+rezultatul. Clientul nu se va termina dupa trimiterea primei operatii ci va
+permite introducerea de noi operatii. De asemeni, inainte de o noua operatie
+se va permite schimbarea serverului utilizat prin specificarea unei noi
+adrese si a unui nou port (sugestie: realizati trimiterea de operatii intr-o
+bucla in finalul careia afisati un meniu minimal de genul: "Continui, renunt
+sau schimb serverul ? (c/r/s)" dupa care se va actiona in functie de
+raspuns). Afisati dupa crearea socketului, in partea initiala a programului,
+inainte de transmitere, dimensiunea bufferului de primire si trimitere a
+datelor (hint: man getsockopt, man 7 socket). Testati clientul utilizand
+doua instante ale serverului rulate la porturi diferite.<BR>
+Structura utilizata pentru incapsularea operatiei poate fi definita dupa cum
+urmeaza:
+</P><PRE>struct operation
+{
+   int number1;  //operand 1
+   int number2;  //operand 2
+   char op;      //opcode - '+','-','*' sau '/'
+};
+</PRE>
+<P></P>
+<P>Solutie: <A href="http://profs.info.uaic.ro/~eonica/rc/client-udp.c">Client</A> <A href="http://profs.info.uaic.ro/~eonica/rc/server-udp.c">Server</A></P>
+
+</BODY></HTML>

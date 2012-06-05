@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0047)http://profs.info.uaic.ro/~eonica/rc/lab04.html -->
+<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Retele de calculatoare</TITLE>
+</HEAD><BODY>
+
+<H1>Laborator 4</H1>
+<H2>Tematica laboratorului</H2>
+<UL>
+<LI>Comenzi referitoare la retea</LI>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab04.html#C1">ip</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab04.html#C2">ping</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab04.html#C3">traceroute</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab04.html#C4">netstat</A></LI>
+</UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab04.html#C5">Comunicare interproces prin socketpair()</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab04.html#C6">Exercitii</A></LI>
+</UL>
+
+<H2>Comenzi referitoare la retea</H2>
+<P>Vom prezenta in cele ce urmeaza cateva comenzi referitoare la retea, fara a intra insa in detalii avansate referitor la acestea.</P>
+
+<H3><A name="#C1">Comanda ip</A></H3>
+<P>
+Comanda ip constituie o unealta foarte complexa de configurare ce reuneste o larga serie de functionalitati.<BR>
+Sintaxa generica a comenzii este 
+</P><PRE>ip [ OPTIONS ] OBJECT [ COMMAND [ ARGUMENTS ]]</PRE>
+OPTIONS defineste un set de optiuni ce pot avea efect la nivel general al comenzii. Printre acestea, cele mai importante ar fi <I>-s</I> pentru afisarea de informatii mai detaliate si <I>-f</I> urmata de un identificator relativ la familia de protocoale asupra careia se adreseaza apelul comenzii ce poate fi: <I>inet</I> pentru IPv4, <I>inet6</I> pentru IPv6 sau <I>link</I> in cazul in care ne referim la configurarea placii de retea direct la nivel data link. Daca <I>ip</I> este rulata fara aceasta optiune va incerca de la sine determinarea nivelului la care va rula pe baza celorlati parametri sau in caz ca nu va reusi va folosi implicit de regula <I>inet</I>.<BR>
+OBJECT defineste una din sectiunile generale de configurare:<BR>
+- <I>link</I> - configurarea dispozitivelor de retea la nivel data link<BR>
+- <I>address</I> - configurarea adreselor ip<BR>
+- <I>neighbour</I> - configurarea tabelelor arp<BR>
+- <I>route</I> - configurarea tabelelor de rutare<BR>
+- <I>rule</I> - configutarea regulilor de rutare<BR>
+- <I>maddress</I> - configurarea adreselor multicast<BR>
+- <I>mroute</I> - afisarea cache-ului legat de rutarea multicast<BR>
+- <I>tunnel</I> - configurarea de tunelling<BR>
+- <I>monitor</I> - monitorizare<BR>
+COMMAND specifica o anumita comanda ce se aplica la una din sectiunile enumerate. Comenzile posibile depind de aceste sectiuni si o lista a acestora poate fi obtinuta prin utilizarea <I>help</I> pentru acest parametru.<BR>
+ARGUMENTS defineste o lista de argumente specifica pentru fiecare comanda.  
+<P></P>
+
+<H4>ip link</H4>
+<P>Utilizand <I>ip link</I> pot fi afisate informatii despre interfetele de retea, acestea pot fi activate si deactivate, poate fi schimbata valoarea MTU, precum si alte operatii la nivel data link. Exista doua comenzi disponibile:<I>show</I> pentru afisarea de informatii si <I>set</I> pentru modificari.<BR>
+Un exemplu de rulare al <I>ip link show</I> arata in felul urmator:</P>
+<PRE>1: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 1000
+    link/ether 00:30:05:a5:ff:be brd ff:ff:ff:ff:ff:ff
+3: sit0: <NOARP> mtu 1480 qdisc noop
+    link/sit 0.0.0.0 brd 0.0.0.0
+</NOARP></BROADCAST,MULTICAST,UP,10000></LOOPBACK,UP,10000></PRE>
+<P>Fiecare interfata de retea este descrisa printr-o intrare pe doua linii. In prima linie avem:</P>
+<UL>
+<LI>numele interfetei (ex: lo - loopback, eth0 - o interfata ethernet, sit0 - un tunel)</LI>
+<LI>un set de flaguri intre paranteze unghiulare setat pentru respectiva interfata (ex: LOOPBAcK - interfata de loopback, UP - functionala la momentul curent, BROADCAST - permite broadcast, MULTICAST - advisory flag ce indica faptul ca interfata poate fi utilizata pentru trimitere la subseturi de vecini, NOARP - interfata nu are setata rezolutia adreselor pentru comunicatie, etc)</LI>
+<LI>valoarea mtu pentru interfata respectiva</LI>
+<LI>qdisc specifica algoritmul de queuing al pachetelor daca acesta sau in caz contrar valoarea <I>noqueue</I> semnificand ca nu se retine nici un pachet (trimis direct) ori <I>noop</I> ce indica faptul ca orice pachet primit este eliminat - blackhole mode</LI>
+<LI>qlen in cazul in care exista algoritm de queueing indica dimensiunea implicita a cozii de pachete</LI>
+</UL>
+<P>In a doua linie sunt afisate informatii despre adresa disponibila la acest nivel pentru respectiva interfata. Primul camp indica tipul de interfata, adresa fiind in stransa legatura cu acest fapt (de ex. pentru tunel nu avem adresa MAC). Urmeaza adresa interfetei (ex: pentru ethernet MAC pe 48 de biti) si adresa de broadcast la acest nivel.</P><BR>
+<P>Probabil principalele operatii la acest nivel si cele mai intalnite in uzul frecvent sunt activarea si deactivarea unei interfete. Activarea unei interfete se face prin comanda <I>ip link set dev [nume interfata ex.: eth0] up</I>. Deactivarea unei interfete se face prin comanda <I>ip link set dev [nume interfata ex.: eth0] down</I></P>
+
+<H4>ip address</H4>
+<P>Utilizand <I>ip address</I> se pot afisa informatii legate de adresele IP asociate interfetelor de retea, si deasemeni adauga sau sterge aceste adrese. Comenzile disponibile sunt respectiv: <I>show</I>, <I>add</I>, <I>delete</I> si <I>flush</I> pentru stergerea completa a informatiilor in cazul de exemplu a mai multor adrese asociate cu o interfata. <BR>
+Un exemplu de rulare al <I>ip address show</I> arata in felul urmator:</P>
+<PRE>1: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 1000
+    link/ether 00:30:05:a5:ff:be brd ff:ff:ff:ff:ff:ff
+    inet 85.122.23.145/28 brd 85.122.23.159 scope global eth0
+    inet6 fe80::230:5ff:fea5:ffbe/64 scope link
+       valid_lft forever preferred_lft forever
+3: sit0: <NOARP> mtu 1480 qdisc noop
+    link/sit 0.0.0.0 brd 0.0.0.0
+</NOARP></BROADCAST,MULTICAST,UP,10000></LOOPBACK,UP,10000></PRE>
+<P>Se poate observa ca primele doua linii din fiecare intrare ofera aceleasi informatii ca si <I>ip link show</I>. In continuare sunt furnizate informatii relativ la adresele IP asociate respectivei interfete. <I>inet</I> si <I>inet6</I> specifica tipul adresei IPv4 respectiv IPv6. Acesta este urmat de adresa efectiva impreuna cu masca de retea data in format /nr (nr de biti ce o compun). Dupa aceasta poate sa apara adresa de broadcast daca este cazul. In final prin intermediul <I>scope</I> este specificat un domeniu in care adresa este valida legat in mod generic de rutarea asociata cu adresa respectiva (ex: global - adresa valida pentru rutare la nivel global, link - adresa valida doar la nivel data link, de dispozitiv, host - adresa valida doar la nivel de localhost, rutarea se face doar in cadrul statiei curente)<BR>
+<BR>
+Un exemplu de adaugare a unei adrese IP unei interfete ar fi urmatorul:
+</P><PRE>ip address add 192.168.101.1/24 brd + dev eth0</PRE>(brd + seteaza adresa de broadcast prin completarea automata a bitilor pentru partea de host)<BR>
+Pentru eliminarea aceleiasi adrese IP exemplul ar arata in felul urmator:
+<PRE>ip address del 192.168.101.1/24 brd - dev eth0</PRE>Ambele operatii se pot realiza inclusiv daca respectiva interfata e inactiva la acel moment (down). In cazul in care o interfata de retea are asociate mai multe adrese, toate aceste adrese (si informatiile legate de rutare) se pot elimina prin intermediul comenzii <I>ip address flush dev [interfata retea ex.: eth0]</I><P></P>
+
+<H4>ip neighbour</H4>
+<P>Prin utilizarea <I>ip neighbour</I> se realizeaza operatiile legate de tabela ARP care mentine asocierea adreselor fizice la adresele IP cum ar fi adaugarea, stergerea, modificarea. In cazul comenzii <I>show</I> un exemplu de output ar fi urmatorul:
+</P><PRE>85.122.23.152 dev eth0 lladdr 00:02:55:aa:7f:fc STALE
+85.122.23.147 dev eth0 lladdr 00:03:47:9b:73:f8 STALE
+85.122.23.148 dev eth0 lladdr 00:30:05:a5:e1:3a STALE
+85.122.23.146 dev eth0 lladdr 00:30:05:a5:e1:3a STALE
+85.122.23.158 dev eth0 lladdr 00:1c:b0:c8:fb:00 REACHABLE
+</PRE>
+Fiecare linie contine cate o mapare a unei adrese IP la una MAC si starea maparii respective in ce priveste conectivitatea. In exemplul de fata varianta <I>stale</I> semnifica faptul ca intrarea e valida, dar nu mai e sigura conectivitatea si va fi reverificata la urmatoarea transmisie iar <I>reachable</I> identifica o intrare sigur accesibila.<BR><BR>
+Analizati fisierul din pagina cursului ce prezinta continutul unor cadre ARP:<A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S4/arp-frames.txt">arp-frames.txt</A> 
+<P></P>
+
+<H4>ip route</H4>
+<P>Prin <I>ip route</I> se realizeaza operatii asupra tabelelor de rutare, cum ar fi afisarea rutelor <I>show</I>, adaugarea de rute <I>add</I>, stergerea de rute<I>del</I> si altele.<BR>
+Un exemplu de afisare a tabelei principale de rutare prin intermediul <I>ip route show</I> arata in felul urmator:
+</P><PRE>85.122.23.144/28 dev eth0  proto kernel  scope link  src 85.122.23.145
+default via 85.122.23.158 dev eth0
+</PRE>
+Fiecare linie corespunde unei intrari legate de o ruta. Prima linie identifica reteaua (subreteaua mai exact) accesibila prin interfata eth0 la nivel de link, adica direct - pachetele vor ajunge la orice destinatie din retea fara a trece printr-un router care sa le redirecteze in cadrul altei retele. A doua intrare este ruta implicita luata de toate pachetele transmise prin intermediul interfetei eth0 care nu se potrivesc cu una din celelalte rute (in cazul de fata nu sunt deci destinate unei statii din reteaua 85.122.23.144/28). Acestea sunt directionate pentru a fi transmise spre destinatie catre routerul/gateway-ul ce are asignata adresa mentionata in parametrul via.<BR>
+Pentru adaugarea unei noi rute (in forma cea mai simpla) se va utiliza comanda <I>ip route add [adresa retea destinatie/masca] via [adresa gateway]</I><BR>
+Stergerea unei rute se face prin comanda <I>ip route del [adresa retea destinatie/masca] via [adresa gateway] dev [nume interfata retea]</I><P></P>
+<BR>
+<P>Mai multe informatii despre comanda ip se pot afla consultand urmatorul link: <A href="http://linux-ip.net/gl/ip-cref/">IP Command Reference</A></P>
+
+<H3><A name="C2">Comanda ping</A></H3>
+<P>Este probabil cea mai utilizata comanda pentru testarea conectivitatii. O rulare in cea mai simpla forma a comenzii se face prin <I>ping [adresa sau domeniu de verificat]</I> (ex: ping 204.228.150.3). Rezultatul rularii va fi transmiterea de pachete ICMP echo request spre respectiva gazda, care va raspunde prin echo reply daca este activa.
+<BR><BR>
+Analizati fisierul din pagina cursului ce prezinta continutul unor cadre ICMP:<A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S4/icmp-frames.txt">icmp-frames.txt</A></P>
+
+<H3><A name="C3">Comanda traceroute</A></H3>
+<P>Aceasta comanda pe langa testarea de baza a conectivitatii ne permite sa si aflam ruta strabatuta de pachete pana la destinatie. Sintaxa de baza este similara cu cea a ping: <I>ping [adresa sau domeniu de verificat]</I> . Functionarea comenzii se bazeaza de asemeni pe transmiterea de pachete ICMP echo request dar de aceasta data crescand secvential campul TTL plecand de la 1. Campul TTL este decrementat de fiecare hop prin care pachetele trec, in momentul in care ajunge la 0, hopul respectiv trimitand spre mesajul ICMP time exceeded. Pe baza acestui mesaj putem identifica astfel dupa prima serie de pachete echo request cu TTL 1, primul hop. In continuare se va creste valoarea TTL la 2, ce va ajunge la 0 la al doilea hop, ce deasemeni va fi identificat pe baza pachetelor time exceeded trimise, si asa mai departe pana la destinatie.</P>
+
+<H3><A name="C4">Comanda netstat</A></H3>
+<P>Asemeni comenzii ip si comanda netstat ofera o serie larga de functionalitati la nivel observational (de diagnosticare) dintre care vom enumera trei mai des utilizate</P>
+<H4>netstat -nr</H4>
+<P>Aceasta varianta a comenzii netstat ne va afisa tabela de rutare intr-un format de afisare diferit de comanda ip, un exemplu de rulare fiind urmatorul:
+</P><PRE>Kernel IP routing table
+Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+85.122.23.144   0.0.0.0         255.255.255.240 U         0 0          0 eth0
+0.0.0.0         85.122.23.158   0.0.0.0         UG        0 0          0 eth0
+</PRE>
+Observam similaritatea cu exemplul anterior in ceea ce priveste rutele destinatie, gateway-ul si masca de retea. Al patrulea camp reprezinta un set de flags ce pot fi:
+<UL>
+<LI>U - interfata de retea folosita e functionala (up)</LI>
+<LI>G - ruta foloseste un gateway</LI>
+<LI>H - ruta are ca destinatie doar o singura gazda posibila</LI>
+<LI>D - ruta a fost creata dinamic</LI>
+<LI>M - setata la modificarea rutei de un mesaj ICMP redirect</LI>
+<LI>! - identifica o ruta de respingere, pachetele fiind eliminate fara transmitere</LI>
+</UL>
+Urmatoarea coloana MSS - Maximum Segment Size, identifica dimensiunea maxima a pachetului ce poate fi trimis prin aceasta ruta. Window identifica dimensiunea maxima a unei sectiuni de date ce poate fi primita la o transmitere. Urmatorul camp - irtt - initial round trip time, reprezinta durata asteptata de la transmiterea unui pachet pana la primirea confirmarii de primire, in lipsa careia pachetul va fi retransmis. Toate aceste trei campuri (coloane) sunt utilizate de catre TCP in comunicatie, iar completarea valorilor asociate cu 0 indica folosirea dimensiunilor implicite. Ultima coloana semnifica fireste interfata de retea utilizata pentru trimiterea pachetelor spre ruta respectiva.
+<P></P>
+<H4>netstat -i</H4>
+<P>Comanda netstat apelata astfel prezinta informatii despre interfetele de retea existente. Un posibil output ar fi urmatorul:
+</P><PRE>Kernel Interface table
+Iface   MTU Met   RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+eth0   1500 0    795614      0      0      0   848486      0      0      0 BMRU
+lo    16436 0  29361250      0      0      0 29361250      0      0      0 LRU
+</PRE>
+Prima coloana identifica interfata de retea. A doua marimea maxima a unitatii de date transmisibile la un moment dat prin intermediul interfetei, in octeti. Coloana a treia reprezinta o metrica asociata interfetei. Urmatoarele coloane contin statistici in ce priveste pachetele transmise si primite grupate pe categoriile, receptionate cu succes in ce priveste integritatea, receptionate eronat in ce priveste integritatea, ignorate (dropped) si pierdute din cauza supraincarcarii bufferului de primire/transmitere (overrun). Ultimul camp contine un set de flags:
+<UL>
+<LI>B - este setata adresa de broadcast</LI>
+<LI>L - interfata e de loopback</LI>
+<LI>M - pachetele vehiculate in retea nu sunt respinse la nivel de adresa MAC fara nici o procesare (mod promiscuu)</LI>
+<LI>O - nu se foloseste ARP</LI>
+<LI>P - e o conexiune point-to-point</LI>
+<LI>R - interfata functioneaza (running)</LI>
+<LI>U - interfata e activa (up)</LI>
+</UL>
+<P></P>
+<H4>netstat -[t|u|W|x]a</H4>
+<P>In functie de litera aleasa ca parametru vor fi afisate conexiunile (legaturile) prezente la momentul curent in sistem la nivel de socketuri TCP, UDP, IP RAW sau locale Unix. Printre informatiile noi ce le putem afla din cele afisate s-ar numara coloanele Local Address si Foreign Address ce ne furnizeaza practic porturile deschise folosite pentru comunicatie. Prin intermediul ultimei coloane, in cazul TcP, putem observa starea curenta a conexiunii similara unei stari a automatului ce descrie functionarea protocolului
+<BR>
+<BR>
+Analizati fisierul din pagina cursului ce prezinta continutul unor cadre TCP:<A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S4/tcp-frames.txt">tcp-frames.txt</A> </P>
+
+<BR><BR>
+<H3>Linkuri utile pentru mai multe informatii legate de comenzi retea si administrare retele</H3>
+<A href="http://linux-ip.net/html/">Guide to IP Layer Network Administration with Linux</A><BR>
+<A href="http://lartc.org/howto/">Linux Advanced Routing &amp; Traffic Control HOWTO</A><BR>
+<A href="http://www.tldp.org/LDP/nag2/index.html">Linux Network Administrators Guide</A>
+
+<H2><A name="C5">Comunicare interproces prin socketpair()</A></H2>
+<P>Un socket este un mecanism bidirectional ce poate fi utilizat atat pentru a comunica intre procesele de pe acelasi calculator, dar in special pentru a asigura comunicarea in retea (dupa cum va fi prezentat in cadrul laboratoarelor urmatoare). Pentru asigurarea comunicarii interproces prin intermediul socketurilor o optiune o constituie primitiva <I>socketpair()</I>. Aceasta nu reprezinta altceva decat crearea unei perechi de socketuri conectate ce vor fi utilizate ulterior in comunicare asemeni cu descriptorii capetelor unui pipe intern. Diferenta majora o constituie modul de comunicare ce in acest caz e bidirectional un socket fiind posibil de utilizat atat pentru transmiterea cat si primirea datelor.<BR></P>
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int socketpair(int d, int type, int protocol, int sv[2]);
+</PRE>
+<UL>
+<LI>d - Primul parametru, domeniul (sau spatiul de nume) specifica familia de protocoale pentru care sunt create socketurile. Avand in vedere ca apelul primitivei presupune crearea a doua socketuri conectate la nivelul statiei curente singura optiune disponibila pentru acest parametru este AF_UNIX (sau AF_LOCAL) ce identifica domeniul local de comunicare.</LI>
+<LI>type - Al doilea parametru determina tipul de transmitere de date asociata socketului. Ca exemplu pentru comunicarea locala acesta poate fi SOCK_STREAM ce indica o transmisie sigura, orientata conexiune, si in ordine similar pipe-urilor. (Mai multe detalii referitor la modul de transmitere privind comunicarea in retea vor fi disponibile in laboratoarele urmatoare)</LI>
+<LI>protocol - Acest parametru identifica tipul de protocol utilizat pentru transmisie. Un apel <I>socketpair()</I> va specifica in mod obisnuit constanta 0 ce semnifica selectarea unui protocol implicit. (Mai multe informatii legate de tipul de protocol specificat vor fi disponibile in cadrul laboratoarelor urmatoare vizand comunicarea in retea)</LI>
+<LI>sv - Ultimul parametru identifica un nume de vector de tip int si dimensiune doi ce va furniza in urma apelului cei doi descriptori de socket (sv[0], sv[1]) ce pot fi utilizati pentru comunicare asemeni capetelor unui pipe, cu diferenta specificata mai sus ce consta in posibilitatea de a scrie cat si a citi date la ambii (in mod bidirectional).</LI>
+<LI>retur - Apelul socket returneaza 0 in caz de succes si -1 in caz de esec.</LI>
+</UL>
+<P>Consultati, compilati si executati exemplul din pagina cursului: <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S4/socketpair.c">socketpair.c</A></P>
+<P>Ca si in cazul fisierelor obisnuite, dupa utilizare, inchiderea socket-urilor se face prin apelul close():</P>
+<PRE>#include &lt;unistd.h&gt;
+
+int close(int fd);
+</PRE>
+<P>Argumentul va fi reprezentat de un descriptor de socket obtinut dupa apelul <I>socketpair()</I>, iar valoarea de retur va fi 0 in caz de succes si -1 in caz de eroare.<BR>   
+</P>
+
+<H2><A name="C6">Exercitii:</A></H2>
+<P>Etapa I: Creati un program in care tatal trimite un sir fiului. Acesta
+concateneaza la sirul primit un alt sir, si va intoarce procesului
+tata raspunsul.
+
+Pentru comunicare se va folosi primitiva soketpair.<BR>
+<A href="http://profs.info.uaic.ro/~eonica/rc/spair.c">Solutie</A>
+</P> 
+<P>Etapa II: Modificati/extindeti programul creat anterior pentru a crea un protocol de comunicare dupa cum urmeaza:<BR>
+</P><UL><LI>comunicarea se face prin executia de comenzi citite de la tastatura in procesul tata si executate in procesul fiu</LI>
+<LI>comenzile sunt siruri de caractere delimitate de new line</LI>
+<LI>raspunsurile sunt siruri de octeti prefixate de lungimea raspunsului</LI>
+<LI>protocolul cuprinde comenzile:
+<UL>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <LI>login: username (a carei existenta este validata prin verificarea fisierului /etc/passwd )</LI>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <LI>cd cale</LI>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <LI>ls</LI>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <LI>quit</LI>
+</UL>
+<BR>
+</LI><LI>comunicarea intre procese se va face prin socketpair().</LI></UL><BR>
+Solutii propuse de studenti (selectiv):<BR>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/miniShell.c">Solutie 1</A> - propusa de Andrei Livadariu (exemplifica utilizarea "grep" pentru comanda "login")</LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/ex2.c">Solutie 2</A> - propusa de Lucian Galea (exemplifica utilizarea unei functii de parsare/prelucrare a fisierului pentru comanda "login")</LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/l4p1.c">Solutie 3</A> - propusa de Bogdan Luca (exemplifica folosirea functiei "system" pentru executia comenzilor)</LI>
+</UL>
+<P></P>
+
+</BODY></HTML>

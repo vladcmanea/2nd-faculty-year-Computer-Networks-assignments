@@ -1,0 +1,49 @@
+#!/bin/bash
+
+declare -i N;
+declare -i K;
+
+if [ $# -lt 1 ];
+then
+    echo "Scrieti numarul N: ";
+    read N;
+else
+    N=$1;
+fi
+
+if [ $# -lt 2 ];
+then
+    echo "Scrieti numarul K: ";
+    read K;
+else
+    K=$2;
+fi
+
+declare -i NF;
+declare -i KF;
+declare -i NK;
+
+NF=1;
+KF=1;
+NK=1;
+
+for i in `seq 2 $N`;
+do
+    let NF=$NF*$i;
+done
+
+for i in `seq 2 $K`;
+do
+    let KF=$KF*$i;
+done
+
+let nk=$N-$K;
+for i in `seq 2 $nk`;
+do
+    let NK=$NK*$i;
+done
+
+let NK=$NK*$KF;
+let NF=$NF/$NK;
+
+echo "Factorialul este $NF";

@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0047)http://profs.info.uaic.ro/~eonica/rc/lab05.html -->
+<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Retele de calculatoare</TITLE>
+</HEAD><BODY>
+
+<H1>Laborator 5</H1>
+<H2>Tematica laboratorului</H2>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab05.html#C0">Socketuri</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab05.html#C1">Generalitati legate de manipularea adreselor</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab05.html#C2">Client TCP</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab05.html#C3">Server TCP</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab05.html#C4">Exercitii</A></LI>
+</UL>
+
+<H2><A name="C0">Socketuri</A></H2>
+<P>Dupa cum s-a mentionat in laboratorul precedent un socket poate fi privit ca un punct de conectare (soclu) pentru "legarea" procesului curent la o sesiune de comunicatie.<BR> 
+Crearea unui socket se face prin apelul socket():</P>
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int socket(int domain, int type, int protocol);
+</PRE>
+<UL>
+<LI>domain - Primul parametru, domeniul (sau spatiul de nume) specifica familia de protocoale pentru care este instantiat socketul. In particular, aceasta determina formatul adreselor ce sunt utilizate pentru a identifica dupa stabilirea conexiunii, capatul determinat de socketul curent. Pentru domeniul Internet, specificat prin PF_INET, vor fi adrese IP impreuna cu un numar de port. (In cursul laboratorului curent, si al urmatoarelor ne vom concentra asupra comunicarii in retea, deci socketurile create vor folosi aceasta constanta)</LI>
+<LI>type - Al doilea parametru determina tipul de transmitere de date asociata socketului. Acesta poate fi SOCK_STREAM pentru a indica o transmisie sigura, orientata conexiune, ce garanteaza livrarea pachetelor in ordine, daca acestea sunt pierdute fiind retransmise (specific TCP). Specificarea SOCK_DGRAM pentru acest parametru indica o transmisie bazata pe datagrame (best-effort), neorientata conexiune, ce nu garanteaza livrarea sau ordinea pachetelor (specific UDP). Acestea sunt variantele cele mai utilizate in transmisiile bazate pe familia PF_INET (un alt parametru posibil in acest caz ar fi SOCK_RAW, ce permite acces direct la protocolul de nivel retea - IP; pentru mai multe informatii despre acest caz consultati man raw)</LI>
+<LI>protocol - Ultimul parametru identifica tipul de protocol utilizat in particular. In cazul familiei PF_INET, pentru transmisie orientata conexiune (SOCK_STREAM), protocolul va fi TCP iar constanta utilizata IPPROTO_TCP. Pentru transmisie neorientata conexiune (SOCK_DGRAM), protocolul va fi UDP iar constanta utilizata IPPROTO_UDP. Prin specificarea constantei 0 ca al treilea parametru al apelului, va fi selectat un protocol implicit corespunzator familiei si tipului de transmisie specificat. In cele doua cazuri mentionate exista doar cele doua variante: TCP si respectiv UDP, deci 0 poate fi utilizat in ambele cazuri.</LI>
+<LI>retur - Apelul socket returneaza un intreg nenegativ, similar unui descriptor de fisier (si utilizat ca atare ulterior) in caz de succes si -1 in caz de esec.</LI>
+</UL>
+<P>Dupa utilizare, inchiderea socket-urilor se poate face, dupa cum s-a precizat si in laboratorul precedent, prin apelul close():</P>
+<PRE>#include &lt;unistd.h&gt;
+
+int close(int fd);
+</PRE>
+<P>Argumentul dat reprezinta descriptorul de socket returnat la crearea acestuia, iar valoarea de retur va fi 0 in caz de succes si -1 in caz de eroare. Apelul close() indica stivei interne a protocolului sa initieze actiunile necesare pentru oprirea comunicatiilor si dealocarea resurselor utilizate pentru acest socket.<BR> 
+Exista insa si o varianta mai flexibila ce inchide socketul doar la citire sau doar la scriere:
+</P><PRE>#include &lt;sys/socket.h&gt;
+
+int shutdown(int s, int how);
+</PRE>
+Primul parametru reprezinta evident descriptorul de socket.<BR>
+Al doilea determina modul de inchidere: 0 - nu va mai fi permisa citirea/primirea datelor; 1 - nu va mai fi permisa scrierea/trimiterea datelor; 2 - inchide socketul atat la scriere cat si la citire, similar <I>close()</I>. 
+<P></P>
+<H2><A name="C1">Generalitati legate de manipularea adreselor</A></H2>
+<P>In vederea realizarii comunicatiilor, o parte din apelurile ce folosesc socketuri, furnizeaza (sau obtin) adrese pentru identificare (un client trebuie sa specifice adresa serverului a carui servicii le necesita spre exemplu, sau un server poate fi nevoit sa determine adresa clientului ce il contacteaza din diverse motive). Structura generica a adreselor utilizate asociate apelurilor ce folosesc socketuri este urmatoarea:</P>
+<PRE>struct sockaddr
+{
+     unsigned short sa_family;
+     char sa_data[14];
+};
+</PRE>
+<P>Primul camp al acestei structuri defineste familia de adrese (spatiul de nume al adresei). Aceasta este sinonima cu familia de protocoale utilizata la apelul socket, existand o relatie de 1 la 1 intre constantele utilizate. Astfel pentru socketuri create folosind domeniul PF_INET, campul sa_family va fi setat la valoarea AF_INET.<BR>
+Valoarea celui de-al doilea camp variaza in functie de familia de adrese. In cazul adresarii in familia AF_INET, este vorba de o adresa IP de 32 de biti, si un port specificat pe 16 biti. Astfel a fost definita o forma particulara a structurii sockaddr folosita pentru comunicatiile bazate pe IP:</P>
+<PRE>struct sockaddr_in
+{
+     unsigned short sin_family;
+     unsigned short sin_port;
+     struct in_addr sin_addr;
+     char sin_zero[8];
+};
+
+struct in_addr
+{
+     unsigned long s_addr;
+};
+</PRE>
+<P>Primul camp va fi setat intotdeauna la constanta specifica familiei de adrese IP: AF_INET. Al doilea camp este portul, iar al treilea, ce are ca tip o alta structura cu un singur membru de tip long, reprezinta adresa IP in sine. Ultimul camp reprezinta 8 bytes din cei 14 ai structurii generale sockaddr ce raman neutilizati.<BR> 
+Pentru completarea portului se foloseste de regula functia htons() aplicata asupra intregului ce defineste portul, care transforma o valoare de tip short de la ordine a octetilor specifica gazdei la ordine specifica retelei - cea necesara pentru trimitere, adica big-endian (ordinea octetilor pe o statie de lucru poate fi atat little-endian, cat si big-endian, functia amintita avand rolul de a pastra compatibilitatea intre reprezentari). Amintim cu aceasta ocazie setul de functii de conversie intre cele doua tipuri de ordonare a octetilor:</P>
+<PRE>#include &lt;arpa/inet.h&gt;
+
+uint32_t htonl(uint32_t hostlong); - transforma o valoare long de la ordine host la network
+
+uint16_t htons(uint16_t hostshort); - transforma o valoare short de la ordine host la network
+
+uint32_t ntohl(uint32_t netlong); - transforma o valoare long de la ordine network la host
+
+uint16_t ntohs(uint16_t netshort); - transforma o valoare short de la ordine network la host
+</PRE>
+<P>Pentru completarea adresei IP se utilizeaza uzual fie functia inet_addr() fie functia inet_aton(). Ambele fac parte dintr-un set mai extins de functii de conversie a adreselor avand prototipurile de mai jos:</P>
+<PRE>#include &lt;sys/socket.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;arpa/inet.h&gt;
+
+in_addr_t inet_addr(const char *cp); 
+- realizeaza conversia dintre un sir de caractere reprezentand adresa IP, in format long ce va fi atribuit catre sin_addr.s_addr  
+
+int inet_aton(const char *cp, struct in_addr *inp); 
+- realizeaza conversia dintre un sir de caractere reprezentand adresa IP, intr-o structura de tip in_addr ce va fi atribuita direct catre campul sin_addr
+
+char *inet_ntoa(struct in_addr in); 
+- realizeaza conversia inversa dintre o structura in_addr ce contine adresa, intr-un sir de caractere
+</PRE>
+<P>Apelurile de conversie, realizeaza automat si transformarile necesare pentru compatibilitate intre ordinile specifice gazdei si retelei, deci nu mai e necesar inca un apel in acest sens. Desi, primele doua functii enuntate au acelasi rol, de a converti un sir de caractere intr-o adresa IP, se prefera folosirea celei de-a doua, introdusa de altfel pentru o tratare mai completa a erorilor. La esec valoarea de retur este -1, care in cazul primei functii e similara cu returul unei adrese de broadcast (255.255.255.255).<BR>  
+Dupa completarea campurilor unei structuri sockaddr_in aceasta poate fi transmisa diverselor apeluri ce utilizeaza socketuri printr-un simplu cast la tipul general sockaddr. 
+</P>
+
+<H2><A name="C2">Client TCP</A></H2>
+<P>In modelul de comunicare server-client, pe scurt, rolul clientului este de a adresa cereri serverului, si de a procesa raspunsurile la acestea. In acest scop un client tipic va trece prin urmatoarele patru faze:</P>
+<UL>
+<LI>
+<H3>1. Crearea unui socket</H3>
+Aceasta se face conform descrierii din prima sectiune de mai sus, parametrii fiind PF_INET, SOCK_STREAM, si IPPROTO_TCP.
+</LI>
+<BR><BR>
+<LI>
+<H3>2. Initierea conexiunii la server</H3>
+TCP fiind un protocol orientat conexiune implica, in prealabil transmiterii de date, conectarea socketului clientului la un socket al serverului. Initierea acestei conexiuni este fireste realizata de client cand necesita un anumit serviciu, serverul asteptand pasiv cererile de conectare. Apelul necesar pentru aceasta operatie este cel al functiei <I>connect()</I>:
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int connect(int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen);
+</PRE>
+Primul parametru este descriptorul de socket creat la primul pas. <BR>
+Al doilea parametru este un pointer la o structura generica sockaddr, careia i se va atribui (prin cast) adresa(referinta) unei structuri sockaddr_in, continand adresa si portul de conectare al serverului.<BR>
+Ultimul parametru va fi intotdeauna (pentru familia AF_INET) <I>sizeof(struct sockaddr_in)</I>, adica dimensiunea adresei furnizate.<BR>
+Daca apelul va reusi, socketul e conectat si transferul de date posibil (retur 0), altfel cauza esecului se poate afla consultand variabila errno (retur -1). Pentru diversele conditii de eroare consultati manualul.
+</LI>
+<BR><BR>
+<LI>
+<H3>3. Transferul de date</H3>
+Transferul de date prin intermediul socketurilor se face de regula, foarte asemanator cu scrierea si citirea din fisier, utilizand apelurile <I>send()</I> si <I>recv()</I> (de fapt, dat fiind ca descriptorul de socket este in sine un descriptor de fisier, se pot utiliza chiar <I>write()</I> si <I>read()</I>, care sunt insa mai limitate).
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+ssize_t send(int s, const void *buf, size_t len, int flags);
+ssize_t recv(int s, void *buf, size_t len, int flags);
+</PRE>
+Primul parametru - s - al ambelor functii reprezinta descriptorul de socker. <BR>
+Al doilea - buf - este un pointer la datele transmise in send, respectiv la o locatie de memorie alocata pentru primirea datelor in recv. <BR>
+Argumentul al treilea - len - reprezinta dimensiunea datelor transmise pentru send, respectiv dimensiunea bufferului de primire ce indica numarul maxim de octeti ce pot fi receptionati la un apel. <BR>
+Ultimul parametru ofera o modalitate de a schimba comportamentul implicit al functiilor prin specificarea unor flaguri. Vom reveni asupra acestui aspect in laboratoarele viitoare, pentru comportamentul implicit specificandu-se valoarea 0. Acest comportament implicit presupune in special faptul ca apelurile functiilor sunt blocante, adica <I>send()</I> va bloca procesul pana ce toate datele sunt trimise, iar <I>recv()</I> va bloca procesul pana ce va primi date. <BR>
+Ambele functii vor returna numarul de bytes transferat in caz de succes si -1 la esec.
+</LI>
+<BR><BR>
+<LI>
+<H3>4. Terminarea conexiunii</H3>
+Dupa ce transferul de date s-a incheiat, conexiunea poate fi terminata prin apelul <I>close()</I> ce va inchide socketul. Acest apel face ca orice incercare ulterioara de citire sau scriere utilizand respectivul socket sa esueze. Inchiderea se poate face asa cum s-a precizat mai sus si prin apelul <I>shutdown()</I>. 
+</LI>
+</UL>
+
+<H2><A name="C3">Server TCP</A></H2>
+<P>Rolul serverului in modelul client-server, este de a prelua, procesa cererile clientilor si furniza raspunsurile catre acestia. In linii mari pasii pe care trebuie sa ii urmeze un server TCP simplu ar fi urmatorii:</P>
+<UL>
+<LI>
+<H3>1. Crearea socketului</H3>
+Se face conform celor descrise in prima sectiune de mai sus. Parametrii sunt similari cu cei de la crearea socketului pentru client: PF_INET, SOCK_STREAM, IPPROTO_TCP
+</LI>
+<BR><BR>
+<LI>
+<H3>2. Asocierea socketului cu o adresa</H3>
+Pentru a face posibila conectarea clientului, care se face specificand o adresa IP si un port, serverul TCP trebuie sa asocieze socketului propriu aceste informatii - adresa IP proprie, si portul la care ofera servicii. Aceasta operatie se realizeaza prin intermediul functiei <I>bind()</I>:
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int bind(int sockfd, const struct sockaddr *my_addr, socklen_t addrlen);
+</PRE>
+Primul parametru este descriptorul socketului creat de server.<BR>
+Al doilea parametru reprezinta un pointer la o structura sockaddr_in (ce va fi transmisa prin cast la referinta), reprezentand adresa IP si portul asociat socketului. Cum am afirmat si mai sus, valorile sunt cele ce vor fi specificate si de client in apelul <I>connect()</I>. Serverul are optiunea de a seta ca adresa IP constanta INADDR_ANY, ce presupune ca orice conexiune care va utiliza portul specificat va fi directionata catre acest socket indiferent de adresa IP, aceasta practica fiind utilizata frecvent, fiind utila de exemplu in cazul in care calculatorul curent dispune de mai multe interfete de retea (de mai multe adrese IP).<BR>
+Ultimul parametru defineste evident dimensiunea parametrul ce refera adresa furnizata.
+</LI>
+<BR><BR>
+<LI>
+<H3>3. Asteptarea pasiva a conexiunilor</H3>
+Dupa ce socketul are cel putin un port atasat poate intra intr-o stare de asteptare pasiva a conexiunilor de la potentialii clienti, prin intermediul unui apel <I>listen()</I>:
+<PRE>#include &lt;sys/socket.h&gt;
+
+int listen(int sockfd, int backlog);
+</PRE>
+Primul parametru reprezinta descriptorul de socket creat si utilizat in apelul bind(). Al doilea parametru reprezinta o limita de conexiuni primite la socket, care vor fi plasate intr-o coada pana la acceptare. Functia va returna 0 la succes si -1 la esec.
+</LI>
+<BR><BR>
+<LI>
+<H3>4. Acceptarea conexiunilor</H3>
+Serverul nu foloseste socketul utilizat in apelurile anterioare pentru transferul efectiv de date. In acest scop va fi creat un nou socket prin apelul accept():
+<PRE>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+</PRE>
+Primul parametru este descriptorul de socket utilizat in apelurile <I>bind()</I> si <I>listen()</I> mentionate anterior.<BR>
+Pointerul dat ca al doilea parametru va referi o structura ce va fi completata cu adresa clientului.<BR>
+Ultimul parametru va referi un intreg ce va fi completat cu dimensiunea acesteia.<BR>
+Efectul unui apel <I>accept()</I> este de a elimina o conexiune din coada de asteptare si de a returna un nou socket prin care se poate realiza transferul de date spre clientul respectiv (in caz de eroare valoarea de retur este -1). Astfel, socketul initial va continua sa "asculte" pentru noi conexiuni. De fapt, datorita acestui mod de functionare, uzual, ca mod simplu de implementare, serverul, dupa apelul listen, va intra intr-o bucla infinita ( while(1) ) corpul acesteia constituind "tratarea" unei cereri, ce debuteaza prin apelul <I>accept()</I> si continua cu operatiile de transfer, fiind reluat apoi pentru urmatoarea conexiune.
+</LI>
+<BR><BR>
+<LI>
+<H3>5. Transferul de date</H3>
+Se va face similar ca in cazul clientului prin <I>send()</I> si <I>recv()</I>. Constituie in mod uzual parte componenta a buclei mentionate la pasul anterior dupa apelul <I>accept()</I>.
+</LI>
+<BR><BR>
+<LI>
+<H3>6. Terminarea conexiunii</H3>
+Conexiunea va fi inchisa prin apelul <I>close()</I> (sau <I>shutdown()</I>) asupra socketului returnat de <I>accept()</I>. Aceasta va fi operatia finala in mod uzual in cadrul buclei mentionate la punctul 4 pentru tratarea cererilor.
+</LI>
+</UL>
+ 
+<P>Consultati, compilati si executati sursele pentru clientul si serverul echo din pagina cursului: <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S5/cliTcpIt.c">cliTcpIt.c</A> , <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S5/servTcpIt.c">servTcpIt.c</A> (<A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S5/Makefile">Makefile</A>)</P>
+
+<H2><A name="C4">Exercitii:</A></H2>
+
+<P>1. Adaptati rezolvarea problemei privitoare la stabilirea unui protocol de comunicare din laboratorul precedent astfel incat comunicarea sa aiba loc intre un client si un server TCP in loc de doua procese parinte-fiu:<BR>
+- clientul va primi comenzile date de utilizator de la tastatura si le va transmite serverului<BR>
+- comenzile sunt siruri de caractere delimitate de new line<BR>
+- raspunsurile sunt siruri de octeti prefixate de lungimea raspunsului<BR>
+- protocolul cuprinde comenzile:
+</P><UL>
+	    <LI>login: username (a carei existenta este validata prin verificarea fisierului /etc/passwd )</LI>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <LI>cd cale</LI>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <LI>ls</LI>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <LI>quit</LI>
+</UL>
+<P></P>
+
+<P>2. [Optional] Dezvoltati un client si un server TCP, urmand pasii descrisi in cadrul laboratorului (sau modificand direct exemplul din pagina cursului), unde: <BR>
+- clientul va trimite doua numere si un cod de operatie ('+', '-', '*', '/') spre server, si va receptiona inapoi rezultatul <BR>
+- cererea va fi trimisa ca o structura ce include campurile necesare, definita astfel:
+</P><PRE>struct operation
+{
+   int number1;	 //operand 1
+   int number2;  //operand 2
+   char op;      //opcode - '+','-','*' sau '/'
+};
+</PRE><BR>
+- serverul va primi structura cerere, si va calcula si returna rezultatul clientului ca intreg<BR>
+Solutie: <A href="http://profs.info.uaic.ro/~eonica/rc/client-tcp.c">Client</A> <A href="http://profs.info.uaic.ro/~eonica/rc/server-tcp.c">Server</A><P></P>
+
+
+
+</BODY></HTML>

@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0047)http://profs.info.uaic.ro/~eonica/rc/lab08.html -->
+<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Retele de calculatoare</TITLE>
+</HEAD><BODY>
+
+<H1>Laborator 8</H1>
+<P></P>
+<H2>Tematica laboratorului</H2>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab08.html#C1">Multiplexarea - utilizarea select()</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab08.html#C2">Exercitii</A></LI>
+</UL>
+
+<H2><A name="C1">Multiplexarea - utilizarea select()</A></H2>
+<P>Una din problemele ce apar in comunicarea in retea tine de faptul ca multe din primitivele utilizate sunt blocante. Pentru a elimina blocarea unui server TCP pe tratarea unui singur client si pentru a acepta si alte conexiuni ce vor fi tratate in paralel o solutie o constituie modelul forked descris in unul din laboratoarele trecute. In cazul in care serverul ofera insa mai multe servicii sau acelasi serviciu pe mai multe porturi, utilizand mai multe socketuri, apare insa o alta problema, si anume ca nu stim care din acestea e pregatit pentru operatia ce dorim sa o executam. Un exemplu ar fi cazul in care pentru un server TCP nu stim la care din socketuri am putea executa accept() - operatie de asemeni blocanta - nestiind ce serviciu a fost solicitat la un moment dat, mai exact la care din socketuri incearca sa se conecteze un client. O solutie pentru aceasta problema o constituie utilizarea primitivei <I>select()</I> ce realizeaza o verificare asupra unui set de socketuri:</P>
+
+<PRE>/* According to POSIX.1-2001 */
+#include &lt;sys/select.h&gt;
+
+/* According to earlier standards */
+#include &lt;sys/time.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
+</PRE>
+
+<P>Functia <I>select()</I> primeste trei seturi de descriptori de socketuri - readfds, writefds, exceptfds - pe care le verifica pentru operatii de citire, scriere, si respectiv conditii de exceptie. Apelul <I>select()</I> va returna cand in urma verificarii realizate intern va gasi in seturile date ca parametri descriptori pregatiti pentru citire/scriere fara blocare sau pentru care a aparut o conditie de exceptie la acel socket (deci cel putin un descriptor e "gata" relativ la operatia specifica listei din care face parte). In seturile date ca parametri vor ramane setati dupa apelul <I>select()</I> doar acesti descriptori.<BR>
+Primul parametru al functiei reprezinta valoarea maxima pentru un descriptor monitorizat in una din liste + 1.<BR> Urmatorii parametri ce reprezinta seturile de descriptori sunt declarate ca multimi (vectori) de biti prin tipul fd_set. Pentru operatii asupra seturilor de descriptori specificate prin acest tip se pot utiliza functiile urmatoare:</P>
+
+<PRE>int FD_ISSET(int fd, fd_set *set);
+void FD_CLR(int fd, fd_set *set);
+void FD_SET(int fd, fd_set *set);
+void FD_ZERO(fd_set *set);
+</PRE>
+
+<P>
+FD_ISSET va returna o valoare diferita de 0 daca descriptorul respectiv este setat in cadrul vectorului. Functia e utilizata in mod uzual pentru a verifica daca un anume descriptor este disponibil pentru o anume operatie dupa ce <I>select()</I> a returnat (practic daca operatia va fi posibila fara blocare la acel socket, descriptorul va ramane setat in cadrul listei)<BR>
+FD_CLR elimina descriptorul fd din multimea set (descriptorul nu va mai fi monitorizat)<BR>
+FD_SET seteaza descriptorul fd in multimea set pentru monitorizare<BR>
+FD_ZERO elimina toti descriptorii din multimea set<BR><BR>
+Daca nu dorim monitorizarea pentru o anume operatie vom specifica respectivul set de descriptori ca NULL in apelul <I>select()</I><BR>
+Prin ultimul parametru al functiei este specificat timpul maxim pe care il va astepta <I>select()</I> pana va returna. Daca acest timp este dat ca NULL <I>select()</I> blocheaza la infinit pana ce un descriptor din seturile monitorizate devine disponibil pentru operatie. Timpul asteptat de select este specificat prin intermediul unei structuri timeval definita astfel:</P><P>
+</P><PRE>struct timeval {
+             
+	long    tv_sec;         /* seconds */
+        long    tv_usec;        /* microseconds */
+};
+</PRE>
+<P><I>select()</I> va returna numarul de descriptori ce raman setati ca disponibili pentru operatii in cadrul vectorilor monitorizati. Evident <I>select()</I> poate fi utilizat pentru monitorizarea oricaror descriptori deci inclusiv cei standard si alti descriptori de fisier.
+</P>
+<P>Consultati, compilati si executati exemplele de utilizare <I>select()</I> disponibile:</P>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/srv-tcp-twoports.c">server TCP ce ofera serviciul 'echo' la doua porturi distincte</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S9/servTcpCSel.c">server TCP 'echo' cu multiplexare - server-tcp.c</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S9/cliTcp.c">client TCP pentru serverul dat mai sus - client-tcp.c</A></LI>
+</UL>
+
+<H2><A name="C2">Exercitii</A></H2>
+<P>1. Modificati aplicatia de chat propusa in laboratorul de data trecuta, astfel incat pentru comunicare sa fie folosit ca protocol de transport TCP (hint: serverul va utiliza select in tratarea clientilor)</P>
+<P>2. [Optional] Incercati modificarea primei surse oferite ca exemplu mai sus (<A href="http://profs.info.uaic.ro/~eonica/rc/srv-tcp-twoports.c">srv-tcp-twoports.c</A>) astfel incat la unul din porturi sa fie oferit serviciul de calcul al unei operatii aritmetice, compatibil cu implementarea clientului TCP corespunzator acestei probleme din cadrul laboratoarelor trecute (<A href="http://profs.info.uaic.ro/~eonica/rc/client-tcp.c">client-tcp.c</A>)<BR>
+Realizati modificarea in asa fel incat sa obtineti un server concurent bazat pe multiplexare select() pentru partea de acceptare a solicitarilor unuia dintre servicii si care sa foloseasca mai apoi modelul forked pentru tratarea fiecarui client in parte.</P>
+
+</BODY></HTML>

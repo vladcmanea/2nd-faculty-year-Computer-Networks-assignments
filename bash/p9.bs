@@ -1,0 +1,27 @@
+#!/bin/bash
+
+let S=0;
+let N=$#;
+let E=0;
+
+if [ $N -eq 0 ]; 
+then
+    echo "Scrieti numarul de numere: ";
+    read N;
+    
+    for i in `seq 1 $N`; 
+    do
+        echo "Scrieti al $i-lea numar: ";
+        read E;
+        S=$(echo $S+$E | bc);
+    done
+else
+    for p in $@;
+    do
+        S=$(echo $S+$p | bc);
+    done
+fi
+
+E=$(echo $S/$N | bc -l);
+echo $E;
+

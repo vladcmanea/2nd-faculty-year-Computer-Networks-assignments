@@ -1,0 +1,150 @@
+Frame 1 (62 bytes on wire, 62 bytes captured)
+    Arrival Time: Feb 24, 2004 15:44:12.101866000
+    Time delta from previous packet: 0.000000000 seconds
+    Time relative to first packet: 0.000000000 seconds
+    Frame Number: 1
+    Packet Length: 62 bytes
+    Capture Length: 62 bytes
+Ethernet II, Src: 00:02:44:27:6f:e3, Dst: 00:02:b3:89:46:25
+    Destination: 00:02:b3:89:46:25 (Intel_89:46:25)
+    Source: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Type: IP (0x0800)
+Internet Protocol, Src Addr: 193.231.30.177 (193.231.30.177), Dst Addr: 193.231.30.225 (193.231.30.225)
+    Version: 4
+    Header length: 20 bytes
+    Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
+        0000 00.. = Differentiated Services Codepoint: Default (0x00)
+        .... ..0. = ECN-Capable Transport (ECT): 0
+        .... ...0 = ECN-CE: 0
+    Total Length: 48
+    Identification: 0x2cd6
+    Flags: 0x04
+        .1.. = Don't fragment: Set
+        ..0. = More fragments: Not set
+    Fragment offset: 0
+    Time to live: 128
+    Protocol: TCP (0x06)
+    Header checksum: 0x0c91 (correct)
+    Source: 193.231.30.177 (193.231.30.177)
+    Destination: 193.231.30.225 (193.231.30.225)
+Transmission Control Protocol, Src Port: 2556 (2556), Dst Port: telnet (23), Seq: 4128830623, Ack: 0, Len: 0
+    Source port: 2556 (2556)
+    Destination port: telnet (23)
+    Sequence number: 4128830623
+    Header length: 28 bytes
+    Flags: 0x0002 (SYN)
+        0... .... = Congestion Window Reduced (CWR): Not set
+        .0.. .... = ECN-Echo: Not set
+        ..0. .... = Urgent: Not set
+        ...0 .... = Acknowledgment: Not set
+        .... 0... = Push: Not set
+        .... .0.. = Reset: Not set
+        .... ..1. = Syn: Set
+        .... ...0 = Fin: Not set
+    Window size: 16384
+    Checksum: 0x8cf2 (correct)
+    Options: (8 bytes)
+        Maximum segment size: 1460 bytes
+        NOP
+        NOP
+        SACK permitted
+
+Frame 2 (64 bytes on wire, 64 bytes captured)
+    Arrival Time: Feb 24, 2004 15:44:12.102406000
+    Time delta from previous packet: 0.000540000 seconds
+    Time relative to first packet: 0.000540000 seconds
+    Frame Number: 2
+    Packet Length: 64 bytes
+    Capture Length: 64 bytes
+Ethernet II, Src: 00:50:8b:ca:09:0f, Dst: 00:02:44:27:6f:e3
+    Destination: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Source: 00:50:8b:ca:09:0f (CompaqCo_ca:09:0f)
+    Type: IP (0x0800)
+    Trailer: 0000
+Internet Protocol, Src Addr: 193.231.30.225 (193.231.30.225), Dst Addr: 193.231.30.177 (193.231.30.177)
+    Version: 4
+    Header length: 20 bytes
+    Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
+        0000 00.. = Differentiated Services Codepoint: Default (0x00)
+        .... ..0. = ECN-Capable Transport (ECT): 0
+        .... ...0 = ECN-CE: 0
+    Total Length: 48
+    Identification: 0x0000
+    Flags: 0x04
+        .1.. = Don't fragment: Set
+        ..0. = More fragments: Not set
+    Fragment offset: 0
+    Time to live: 64
+    Protocol: TCP (0x06)
+    Header checksum: 0x7967 (correct)
+    Source: 193.231.30.225 (193.231.30.225)
+    Destination: 193.231.30.177 (193.231.30.177)
+Transmission Control Protocol, Src Port: telnet (23), Dst Port: 2556 (2556), Seq: 3522095627, Ack: 4128830624, Len: 0
+    Source port: telnet (23)
+    Destination port: 2556 (2556)
+    Sequence number: 3522095627
+    Acknowledgement number: 4128830624
+    Header length: 28 bytes
+    Flags: 0x0012 (SYN, ACK)
+        0... .... = Congestion Window Reduced (CWR): Not set
+        .0.. .... = ECN-Echo: Not set
+        ..0. .... = Urgent: Not set
+        ...1 .... = Acknowledgment: Set
+        .... 0... = Push: Not set
+        .... .0.. = Reset: Not set
+        .... ..1. = Syn: Set
+        .... ...0 = Fin: Not set
+    Window size: 5840
+    Checksum: 0xfa16 (correct)
+    Options: (8 bytes)
+        Maximum segment size: 1460 bytes
+        NOP
+        NOP
+        SACK permitted
+
+Frame 3 (54 bytes on wire, 54 bytes captured)
+    Arrival Time: Feb 24, 2004 15:44:12.102458000
+    Time delta from previous packet: 0.000052000 seconds
+    Time relative to first packet: 0.000592000 seconds
+    Frame Number: 3
+    Packet Length: 54 bytes
+    Capture Length: 54 bytes
+Ethernet II, Src: 00:02:44:27:6f:e3, Dst: 00:02:b3:89:46:25
+    Destination: 00:02:b3:89:46:25 (Intel_89:46:25)
+    Source: 00:02:44:27:6f:e3 (SurecomT_27:6f:e3)
+    Type: IP (0x0800)
+Internet Protocol, Src Addr: 193.231.30.177 (193.231.30.177), Dst Addr: 193.231.30.225 (193.231.30.225)
+    Version: 4
+    Header length: 20 bytes
+    Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
+        0000 00.. = Differentiated Services Codepoint: Default (0x00)
+        .... ..0. = ECN-Capable Transport (ECT): 0
+        .... ...0 = ECN-CE: 0
+    Total Length: 40
+    Identification: 0x2cd7
+    Flags: 0x04
+        .1.. = Don't fragment: Set
+        ..0. = More fragments: Not set
+    Fragment offset: 0
+    Time to live: 128
+    Protocol: TCP (0x06)
+    Header checksum: 0x0c98 (correct)
+    Source: 193.231.30.177 (193.231.30.177)
+    Destination: 193.231.30.225 (193.231.30.225)
+Transmission Control Protocol, Src Port: 2556 (2556), Dst Port: telnet (23), Seq: 4128830624, Ack: 3522095628, Len: 0
+    Source port: 2556 (2556)
+    Destination port: telnet (23)
+    Sequence number: 4128830624
+    Acknowledgement number: 3522095628
+    Header length: 20 bytes
+    Flags: 0x0010 (ACK)
+        0... .... = Congestion Window Reduced (CWR): Not set
+        .0.. .... = ECN-Echo: Not set
+        ..0. .... = Urgent: Not set
+        ...1 .... = Acknowledgment: Set
+        .... 0... = Push: Not set
+        .... .0.. = Reset: Not set
+        .... ..0. = Syn: Not set
+        .... ...0 = Fin: Not set
+    Window size: 17520
+    Checksum: 0xf93a (correct)

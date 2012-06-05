@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0047)http://profs.info.uaic.ro/~eonica/rc/lab03.html -->
+<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Retele de calculatoare</TITLE>
+</HEAD><BODY>
+
+<H1>Laborator 3</H1>
+<H2>Tematica laboratorului</H2>
+<UL>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab03.html#C1">Duplicarea descriptorilor</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab03.html#C2">Comunicare interproces - Pipes</A></LI>
+<LI><A href="http://profs.info.uaic.ro/~eonica/rc/lab03.html#C3">Exercitii</A></LI>
+</UL>
+
+<H2><A name="C1">Duplicarea descriptorilor</A></H2>
+<P>
+Duplicarea descriptorilor de fisier, utilizata in mod uzual pentru redirectarea descriptorilor standard se face programatic prin intermediul functiilor dup() si dup2(). Headerele necesare si prototipurile acestor functii sunt urmatoarele:</P>
+<PRE>#include &lt;unistd.h&gt;
+
+int dup(int oldfd);
+int dup2(int oldfd, int newfd);
+</PRE> 
+<P>dup() va realiza duplicarea descriptorului specificat de parametrul oldfd. Functia va returna un nou descriptor asociat aceluiasi fisier, primul gasit neasociat in ordine dupa valoarea oldfd.<BR>
+dup2() permite specificarea noului descriptor in mod explicit prin parametrul newfd. dup2() va inchide mai intai fisierul asociat acestui descriptor, daca descriptorul nu este liber, si va returna valoarea acestuia<BR>
+Ambele functii returneaza -1 in caz de eroare</P>
+
+<H2><A name="C2">Pipe-uri</A></H2>
+<P>
+Pipe-urile sunt mecanisme unidirectionale de comunicare interproces ce sunt utilizate in mod uzual pentru comunicarea intre un proces parinte si procesele copil. Datele scrise la un capat sunt citite la celalalt capat in aceeasi ordine in care au fost scrise. Pipe-urile sunt blocante, avand capacitatea de scriere si de citire limitata. Astfel, in mod uzual, daca pipe-ul este "plin", un apel de scriere va bloca procesul pana cand va putea fi executat, si similar, daca un pipe e "gol", un apel de citire va bloca deasemeni procesul pana va exista informatie disponibila pentru a fi citita.<BR>
+Reamintim ca mecanismul de comunicare prin pipe se intalneste si la nivelul shellului, redirectarea datelor de iesire de la un proces ca date de intrare pentru altul fiind bazata pe acest sistem (ex: netstat | less - folosirea pipe-ului pentru a afisa rezultatul comenzii netstat pagina cu pagina)
+</P>
+
+<H3>Crearea pipe-urilor</H3>
+<P>Pipe-urile sunt create prin intermediul comenzii pipe() (necesita includerea unistd.h):</P>
+<PRE>int pipe(int filedes[2]);</PRE>
+<P>Singurul argument al functiei este un tablou de doi intregi. Acestia sunt folositi in urma apelului ca doi descriptori obisnuiti de fisier reprezentand capetele pipe-ului. Astfel, filedes[0] este capatul de citire al datelor din pipe, iar filedes[1] cel de scriere. Functia returneaza 0 in caz de succes si -1 in caz de eroare.
+</P>
+
+<H3>Utilizarea pipe-urilor</H3>
+<P>Pipe-urile sunt utilizate dupa cum am mentionat mai sus pentru comunicare intre procesele inrudite.<BR>
+Astfel, pentru comunicare printr-un pipe intre un proces parinte si unul copil, procesul parinte va realiza mai intai un apel pipe(), ce-i va pune la dispozitie cei doi descriptori de fisier din vectorul pasat ca argument. Dupa crearea unui proces copil printr-un apel fork(), acesta va avea acces la cei doi descriptori "mosteniti" de la parinte. In ramura destinata parintelui se va utiliza unul din cei doi descriptori (un capat al pipe-ului) fie pentru citire, fie pentru scriere, iar in ramura copilului, celalalt descriptor. Descriptorul neutilizat din cele doua procese, va fi de regula inchis printr-un apel close. Descriptorii utilizati vor fi inchisi fireste dupa terminarea scrierii/citirii de catre cele doua procese. Operatiile de scriere citire in pipe se pot face si utilizand functiile de I/O cu fisiere de librarie stdio (fprintf, fscanf, fputs, fgets, etc) dupa asocierea descriptorilor cu un stream de tip FILE*, printr-un apel fdopen(). <BR>
+Un pipe poate fi utilizat intr-un mod asemanator pentru comunicarea intre doua procese copil. Dupa apelul pipe() in parinte si crearea copiilor, acestia vor "mosteni" setul de descriptori. Diferenta, fata de situatia precedenta va fi evident ca nu procesul parinte va folosi un capat al pipe-ului si il va inchide pe celalalt ci al doilea copil creat. Aceasta este de altfel si modalitatea prin care se realizeaza comunicarea prin pipe la nivelul shellului. In exemplul netstat | less, vor fi create doua procese copil ale shellului ce vor mosteni descriptorii rezultati in urma unui apel pipe intern, pentru a comunica intre ele.<BR></P>
+
+<P>Consultati, compilati si executati exemplul prezent in pagina cursului ce simuleaza constructia who | wc in mod programatic <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S3/who_wc.c">who_wc.c</A></P>
+
+<P>Libraria stdio pune la dispozitie doua functii simplificate, pentru rularea si comunicarea cu un program extern din cadrul unui proces, asociindu-i un pipe de legatura cu procesul din care este lansat. Acestea sunt popen() si pclose():</P>
+<PRE>FILE *popen(const char *command, const char *type);
+
+int pclose(FILE *stream);
+</PRE>
+<P>Functia popen realizeaza urmatorul set de operatii: </P>
+<UL>
+<LI>creeaza un pipe in cadrul procesului curent;</LI>
+<LI>instantiaza un proces copil;</LI>
+<LI>inchide capetele pipe-ului conform celui de-al doilea parametru - "r" sau "w" , ce defineste operatia ce va fi posibila asupra pipe-ului din cadrul procesului parinte, scriere sau citire;</LI> 
+<LI>redirecteaza intrarea sau iesirea standard dupa caz, spre capatul pipe-ului ramas deschis din cadrul procesului copil;</LI>
+<LI>lanseaza comanda data ca prim parametru in cadrul procesului copil;</LI>
+<LI>asociaza un stream de tip FILE* descriptorului/capatului pipe-ului din cadrul procesului parinte pe care il si returneaza;</LI>
+</UL>
+<P>In urma apelului popen() se creeaza astfel un pipe prin care se pot transmite date, sau primi date, din procesul curent catre unul extern, prin intermediul pointerului FILE*. Apelul pclose() pur si simplu inchide capatul pipe-ului din procesul curent accesibil prin pointerul amintit, ce este transmis ca parametru, in plus asteptand si finalizarea procesului copil (extern).  
+</P>
+
+<H3>Pipe-uri cu nume</H3>
+<P>Probabil mai cunoscute cu denumire de FIFO, acest tip de pipe-uri permit comunicarea si la nivel de procese nerelationate intre ele ca parinte copil, sau copii ai aceluiasi parinte. Un FIFO este un tip de pipe ce are un nume in cadrul sistemului de fisiere, ce permite accesarea sa de catre orice proces.<BR>
+Crearea unui FIFO din cadrul shellului se poate face prin intermediul comenzii mkfifo specificand ca argument calea cu numele fisierului. La un apel ls se poate distinge ulterior ca fisierul este de tip pipe cu nume pe baza primului caracter dinaintea drepturilor de acces care va fi "p". Pentru a testa caracteristica de canal de comunicatie un exemplu l-ar constitui rularea comenzii cat in doua terminale diferite redirectand iesirea si intrarea catre FIFO-ul creat (cat &lt; fifoname ; cat &gt; fifoname). Efectul va fi ca scriind la un terminal, datele introduse vor apare la cel de-al doilea, fiind transferate prin intermediul FIFO-ului. Eliminarea FIFO-ului din sistem se face utilizand comanda rm<BR>
+Un FIFO se poate crea programatic prin intermediul functiei dedicate mkfifo() (necesita includerea sys/types.h si sys/stat.h):</P>
+<PRE>int mkfifo(const char *pathname, mode_t mode);</PRE>
+<P>Primul parametru reprezinta calea si numele pentru FIFO, iar al doilea permisiunile, ca in cazul unui fisier obisnuit, ce insa trebuie sa includa atat drepturi de citire cat si de scriere datorita modului de utilizare a unui pipe (ex: S_IRUSR | S_IWUSR).<BR>
+O alta modalitate de creare a unui FIFO este utilizarea functiei generice pentru crearea unui fisier mknod():
+</P><PRE>int mknod(const char *pathname, mode_t mode, dev_t dev);</PRE>
+In acest caz, pentru crearea unui pipe al doilea parametru va include pe langa drepturile de acces si flagul S_IFIFO.<P></P>
+
+<P>Consultati, compilati si executati exemplele de utilizare FIFO prezente in pagina cursului <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S3/sendDataFifo.c">sendDataFifo.c</A> <A href="http://profs.info.uaic.ro/~adria/teach/courses/net/files/NetEx/S3/recDataFifo.c">recDataFifo.c</A></P>
+
+<P>Un pipe cu nume (indiferent de modul de creare, programatic sau din consola) poate fi accesat dintr-un program similar unui fisier obisnuit, un proces deschizand-ul pentru citire si un altul pentru scriere (nu simultan). Exista posibilitatea ca mai multe procese sa utilizeze fisierul simultan pentru operatii I/O, caz in care e posibil sa apara necesitatea unui mecanism de sincronizare.<BR>
+Eliminarea unui FIFO din sistem in mod programatic se poate face prin apelul unlink() avand ca parametru calea catre FIFO.  
+</P>
+
+<H2><A name="C3">Exercitii:</A></H2>
+<P>1. Sa se scrie un program care instantiaza un proces fiu si va folosi pipeuri pentru comunicare pentru urmatoarele operatii:<BR>
+- parintele scrie intr-un pipe un numar <BR>
+- fiul&nbsp;verifica o proprietate a numarului (ex: daca este par sau daca este prim) si transmite prin pipe
+parintelui
+raspunsul(yes,no) <BR>
+- parintele va afisa raspunsul primit <BR> 
+<A href="http://profs.info.uaic.ro/~eonica/rc/pipe.c">Solutie</A></P>
+<P>2. Scrieri un program care sa simuleze comanda:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cat prog.c | grep "include", folosind fifo-uri si dup.<A href="http://profs.info.uaic.ro/~eonica/rc/fifo.c">Solutie</A></P>
+<P>3. Very raw load-balancing: Procesul parinte primeste ca argumente capetele unui interval. Creati trei procese copil din cadrul unui proces parinte legandu-le prin pipe intr-o topologie de tip inel: Child 1 -&gt; Child 2 -&gt; Child 3 -&gt; Child 1, iar primul proces copil va avea deasemeni doua pipeuri deschise cu procesul parinte, unul de primire si unul de trimitere. Imaginati o solutie bazata pe transmiterea unui token in inel, astfel incat dupa ce fiecare dintre procesele copil va calcula in paralel suma partiala a numerelor dintr-o treime distincta a intervalului, sa fie realizata suma totala si transmisa catre parinte.<BR>
+<A href="http://profs.info.uaic.ro/~eonica/rc/load.c">Solutie</A></P>
+
+</BODY></HTML>

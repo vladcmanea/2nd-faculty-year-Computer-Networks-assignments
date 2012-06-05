@@ -1,0 +1,7 @@
+Suma elementelor pe ultima portiune, 6, este 16
+Suma elementelor pe portiunea 1 este 6
+Suma elementelor pe portiunea 2 este 15
+Suma elementelor pe portiunea 3 este 24
+Suma elementelor pe portiunea 4 este 33
+Suma elementelor pe portiunea 5 este 42
+Suma elementelor pe ultima portiune, 6, este 16

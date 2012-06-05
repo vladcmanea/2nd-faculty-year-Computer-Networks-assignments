@@ -1,0 +1,60 @@
+#!/bin/bash
+
+declare -i N;
+let max=0;
+let min=0;
+
+if [ $# -eq 0 ];
+then
+
+    echo "Scrieti numarul de numere: ";
+    read N;
+
+    echo "Scrieti primul numar: ";
+    read K;
+
+    let max=$K;
+    let min=$K;
+
+    i=2;
+    while [ $i -le $N ];
+    do
+        echo "Scrieti al $i-lea numar: ";
+        read K;
+
+        if [ $K -lt $min ];
+        then
+            let min=K;
+        fi
+
+        if [ $K -gt $max ];
+        then
+            let max=K;
+        fi
+
+        let i=$i+1;
+
+    done
+
+else
+
+    let min=$1;
+    let max=$1;
+
+    for p in $@;
+    do
+        if [ $p -le $min ];
+        then
+            let min=$p;
+        fi
+
+        if [ $p -ge $max ];
+        then
+            let max=$p;
+        fi
+    done
+
+fi
+
+echo "Maximul este $max";
+echo "Minimul este $min";
